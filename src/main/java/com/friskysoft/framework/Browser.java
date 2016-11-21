@@ -183,6 +183,24 @@ public class Browser implements WebDriver {
         }
     }
 
+    public enum ArchType {
+        X86(32), X64(64);
+
+        ArchType(int value) {
+            this.value = value;
+        }
+
+        int value;
+
+        public int getValue() {
+            return value;
+        }
+    }
+
+    public enum PlatformType {
+        WINDOWS, MAC, LINUX
+    }
+
     private static PlatformType getPlatformType() {
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("mac")) {
