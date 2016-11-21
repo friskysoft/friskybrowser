@@ -5,7 +5,6 @@ import com.friskysoft.framework.Element;
 import com.friskysoft.test.pages.CarsPage;
 import com.friskysoft.test.pages.GooglePage;
 import com.friskysoft.test.utils.ImageUploader;
-import io.github.bonigarcia.wdm.PhantomJsDriverManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.remote.BrowserType;
@@ -27,7 +26,7 @@ public class BrowserTest {
 
     @BeforeClass
     public void setupBrowser() throws Exception {
-        PhantomJsDriverManager.getInstance().setup();
+        //PhantomJsDriverManager.getInstance().setup(); // this is freezing the build in travis for some reason.
         browser = Browser.newInstance(BrowserType.PHANTOMJS)
                 .setPageLoadTimeout(30, TimeUnit.SECONDS)
                 .setImplicitWait(5, TimeUnit.SECONDS);

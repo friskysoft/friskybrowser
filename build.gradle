@@ -1,12 +1,28 @@
+
+import org.apache.tools.ant.taskdefs.condition.Os
+import org.apache.commons.io.FileUtils
+
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath "commons-io:commons-io:2.5"
+    }
+}
+
+
 group 'com.friskysoft'
 
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'idea'
 
-ext.java_version = '1.8'
+ext.javaVersion = '1.8'
+ext.phantomJsVersion = '2.1.1'
 
-sourceCompatibility = java_version
+sourceCompatibility = javaVersion
 
 repositories {
     mavenCentral()
@@ -33,8 +49,8 @@ def getTimestamp() {
 
 idea {
     project {
-        jdkName = java_version
-        languageLevel = java_version
+        jdkName = javaVersion
+        languageLevel = javaVersion
     }
 }
 
@@ -59,6 +75,7 @@ test {
 
     testLogging {
         events "PASSED", "FAILED", "SKIPPED", "STANDARD_OUT", "STANDARD_ERROR"
+        exceptionFormat = 'full'
     }
 
     afterSuite { desc, result ->
@@ -93,4 +110,47 @@ uploadArchives {
             pom.groupId = project.group
         }
     }
+}
+
+task downloadPhantomJS {
+    def osFilenamePart
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        osFilenamePart = "windows.zip"
+    } else if (Os.isFamily(Os.FAMILY_MAC)) {
+        osFilenamePart = "macosx.zip"
+    } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+        osFilenamePart = Os.isArch("amd64") ? "linux-x86_64.tar.bz2" : "linux-i686.tar.bz2"
+    }
+
+    def filename = "phantomjs-$phantomJsVersion-$osFilenamePart"
+    def outputFile = file("$buildDir/webdriver/$filename")
+    inputs.property("phantomJsVersion", phantomJsVersion)
+    outputs.file(outputFile)
+
+    doLast {
+        FileUtils.copyURLToFile(new URL("https://bitbucket.org/ariya/phantomjs/downloads/$filename"), outputFile)
+    }
+}
+
+task preparePhantomJS(type: Copy) {
+    def outputDir = file("$buildDir/webdriver/phantomjs")
+    outputs.dir(outputDir)
+
+    def archive = downloadPhantomJS.outputs.files.singleFile
+
+    from(Os.isFamily(Os.FAMILY_MAC) || Os.isFamily(Os.FAMILY_WINDOWS) ? zipTree(archive) : tarTree(archive))
+    into(outputDir)
+    eachFile { FileCopyDetails fcp ->
+        fcp.relativePath = new RelativePath(!fcp.directory, *fcp.relativePath.segments[1..-1])
+    }
+
+    def phantomJsFilename = Os.isFamily(Os.FAMILY_WINDOWS) ? "phantomjs.exe" : "bin/phantomjs"
+    System.setProperty "phantomjs.binary.path", new File(outputDir, phantomJsFilename).absolutePath
+    println "phantomjs.binary.path=" + System.getProperty("phantomjs.binary.path")
+}
+
+preparePhantomJS.dependsOn "downloadPhantomJS"
+
+tasks.withType(Test) {
+    systemProperty "phantomjs.binary.path", System.getProperty("phantomjs.binary.path")
 }
