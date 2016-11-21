@@ -53,8 +53,8 @@ public class BrowserTest {
 
         CarsPage.homePage.waitToBeVisible();
         CarsPage.makeDropdown.click().selectByText("Toyota");
-        CarsPage.zipInput.type("10001");
-        CarsPage.searchSubmit.click();
+        CarsPage.zipInput.type("10001").submit();
+        //CarsPage.searchSubmit.click(); // not working in travis
         browser.sleep(2000);
         CarsPage.searchResultListing.waitToBeVisible(15);
         String text = CarsPage.searchResultTitle.getText();
