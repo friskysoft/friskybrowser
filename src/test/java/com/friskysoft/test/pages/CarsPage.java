@@ -11,6 +11,7 @@ public class CarsPage {
     public static final Element searchSubmit = new Element("input[value=Search]");
 
     // results page
+    public static final Element searchResultListing = new Element("#listings");
     public static final Element searchResultTitle = new Element("//h1");
 
 }
