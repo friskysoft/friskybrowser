@@ -55,7 +55,8 @@ public class BrowserTest {
         CarsPage.makeDropdown.click().selectByText("Toyota");
         CarsPage.zipInput.type("10001");
         CarsPage.searchSubmit.click();
-        CarsPage.searchResultListing.waitToBeVisible();
+        browser.sleep(2000);
+        CarsPage.searchResultListing.waitToBeVisible(15);
         String text = CarsPage.searchResultTitle.getText();
         LOGGER.info(text);
         assertTrue(text.toLowerCase().contains("toyota"), "Actual text: <" + text + ">");
