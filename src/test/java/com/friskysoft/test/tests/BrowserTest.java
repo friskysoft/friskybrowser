@@ -2,20 +2,19 @@ package com.friskysoft.test.tests;
 
 import com.friskysoft.framework.Browser;
 import com.friskysoft.framework.Element;
+import com.friskysoft.test.pages.CarsPage;
 import com.friskysoft.test.pages.GooglePage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.remote.BrowserType;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
 import java.util.concurrent.TimeUnit;
+import static org.testng.Assert.*;
 
 public class BrowserTest {
 
-    Browser browser;
+    private Browser browser;
 
     private static final Log LOGGER = LogFactory.getLog(BrowserTest.class);
 
@@ -26,14 +25,10 @@ public class BrowserTest {
                 .setImplicitWait(5, TimeUnit.SECONDS);
     }
 
-    @BeforeMethod
-    public void resetPage() {
+    @Test
+    public void googleSearch() {
         browser.open("https://www.google.com/?complete=0");
         browser.takeScreenshot();
-    }
-
-    @Test
-    public void searchTest() {
 
         GooglePage.searchBox.waitToBePresent().sendKeys("git");
         GooglePage.searchButton.waitToBeClickable().click();
@@ -44,30 +39,36 @@ public class BrowserTest {
 
         for (Element element : GooglePage.searchResults.getAll()) {
             String text = element.getText();
-            assert(text.toLowerCase().contains("git"));
+            LOGGER.info(text);
+            assertTrue(text.toLowerCase().contains("git"), "Actual text: <" + text + ">");
         }
 
     }
 
     @Test
-    public void searchTest2() {
+    public void carsSearch() {
 
-        GooglePage.searchBox.waitToBePresent().sendKeys("selenium");
-        GooglePage.searchButton.waitToBeClickable().click();
-        GooglePage.searchResults.waitToBePresent(10);
+        browser.open("https://www.cars.com");
+        browser.takeScreenshot();
 
-        int count = GooglePage.searchResults.count();
-        assert(count > 0);
+        CarsPage.homePage.waitToBeVisible();
+        CarsPage.makeDropdown.click().selectByText("Toyota");
+        CarsPage.zipInput.type("10001");
+        CarsPage.searchSubmit.click();
+        CarsPage.searchResultTitle.waitToBeVisible();
+        String text = CarsPage.searchResultTitle.getText();
+        LOGGER.info(text);
+        assertTrue(text.toLowerCase().contains("toyota"), "Actual text: <" + text + ">");
 
-        for (Element element : GooglePage.searchResults.getAll()) {
-            String text = element.getText();
-            assert(text.toLowerCase().contains("selenium"));
-        }
+    }
+
+    @AfterMethod
+    public void screenshot() {
+        browser.takeScreenshot();
     }
 
     @AfterClass
     public void teardownBrowser() {
-        browser.takeScreenshot();
         browser.destroy();
     }
 

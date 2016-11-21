@@ -31,6 +31,7 @@ public class Browser implements WebDriver {
 
     private static ThreadLocal<WebDriver> wrappedThreadLocalDriver = new ThreadLocal<>();
     private static Browser singletonBrowser;
+    private static String defaultScreenshotDir = "./screenshots";
 
     public static final int DEFAULT_IMPLICIT_WAIT = 5;
     public static final int DEFAULT_EXPLICIT_WAIT = 10;
@@ -91,7 +92,7 @@ public class Browser implements WebDriver {
                 break;
         }
         setWebDriver(driver);
-        return newInstance();
+        return newInstance().resize(1500, 1000);
     }
 
     public static Browser newInstance(WebDriver driver) {
@@ -290,6 +291,12 @@ public class Browser implements WebDriver {
         return getWebDriver().manage();
     }
 
+    public Browser resize(int width, int height) {
+        getWebDriver().manage().window().setPosition(new Point(0,0));
+        getWebDriver().manage().window().setSize(new Dimension(width, height));
+        return this;
+    }
+
     public void destroy() {
         try {
             getWebDriver().close();
@@ -305,6 +312,15 @@ public class Browser implements WebDriver {
         return this;
     }
 
+    public Browser sleep(long milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+        } catch (InterruptedException ex) {
+            // ignore
+        }
+        return this;
+    }
+
     public Browser wait(int time, TimeUnit unit) {
         try {
             Thread.sleep(unit.toMillis(time));
@@ -314,10 +330,22 @@ public class Browser implements WebDriver {
         return this;
     }
 
+    public Browser setDefaultScreenshotDir(String defaultScreenshotDir) {
+        Browser.defaultScreenshotDir = defaultScreenshotDir;
+        return this;
+    }
+
     public Browser takeScreenshot() {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        String methodName = stackTraceElements[2].getMethodName();
+        String className = stackTraceElements[2].getClassName();
+        String[] classNameSplit = className.split("\\.");
+        className = classNameSplit[classNameSplit.length-1];
+
         DateFormat format = new SimpleDateFormat("YYYYMMdd_HHmmss");
-        String title = getTitle().replaceAll("\\s+", "_");
-        return takeScreenshot("./screenshots/screenshot_" + format.format(new Date()) + "_" + title + ".png");
+        String title = getTitle().replaceAll("[^A-Za-z0-9]", "_");
+        return takeScreenshot(String.format(defaultScreenshotDir + "/screenshot_%s_%s_%s_%s.png",
+                format.format(new Date()), className, methodName, title));
     }
 
     public Browser takeScreenshot(String filepath) {

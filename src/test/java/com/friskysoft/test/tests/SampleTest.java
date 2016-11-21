@@ -14,7 +14,7 @@ import static org.testng.Assert.assertTrue;
 
 public class SampleTest {
 
-    Browser browser;
+    private Browser browser;
 
     @BeforeClass
     public void setupBrowser() throws Exception {

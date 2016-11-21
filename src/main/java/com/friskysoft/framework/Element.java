@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.LinkedList;
@@ -86,6 +87,10 @@ public class Element {
         }
     }
 
+    public Select getSelectElement() {
+        return new Select(getWebElement());
+    }
+
     public List<WebElement> getWebElements() {
         return Browser.getWebDriver().findElements(getBy());
     }
@@ -93,6 +98,16 @@ public class Element {
     public Element click() {
         LOGGER.info("Element click: " + this);
         getWebElement().click();
+        return this;
+    }
+
+    public Element waitToBeVisible() {
+        return waitToBeVisible(Browser.DEFAULT_EXPLICIT_WAIT);
+    }
+
+    public Element waitToBeVisible(int timeOutInSeconds) {
+        LOGGER.info("Waiting for element to be visible: " + this);
+        new WebDriverWait(Browser.getWebDriver(), timeOutInSeconds).until(ExpectedConditions.visibilityOfElementLocated(wrappedBy));
         return this;
     }
 
@@ -135,6 +150,24 @@ public class Element {
     public Element clear() {
         LOGGER.info("Element text clear: " + this);
         getWebElement().clear();
+        return this;
+    }
+
+    public Element selectByIndex(int index) {
+        LOGGER.info("Select option by index <" + index + "> from: " + this);
+        getSelectElement().selectByIndex(index);
+        return this;
+    }
+
+    public Element selectByText(String text) {
+        LOGGER.info("Select option by text <" + text + "> from: " + this);
+        getSelectElement().selectByVisibleText(text);
+        return this;
+    }
+
+    public Element selectByValue(String value) {
+        LOGGER.info("Select option by value <" + value + "> from: " + this);
+        getSelectElement().selectByValue(value);
         return this;
     }
 
