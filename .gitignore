@@ -10,3 +10,8 @@ build
 out
 bin
 screenshots
+.mtj.tmp
+**/*.jar
+**/*.war
+**/*.ear
+hs_err_pid*
