@@ -1,0 +1,12 @@
+**/*.class
+**/*.log
+**/*.pyc
+**/*.iml
+**/.idea
+**/.project
+**/.gradle
+**/.DS_Store
+build
+out
+bin
+screenshots

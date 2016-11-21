@@ -1,0 +1,110 @@
+group 'com.friskysoft'
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'idea'
+
+ext.java_version = '1.8'
+
+sourceCompatibility = java_version
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+project.ext {
+    majorVersion = 0
+    minorVersion = 0
+    patchVersion = System.getenv('BUILD_NUMBER')
+
+    if (patchVersion == null || patchVersion.isEmpty()) {
+        patchVersion = getTimestamp()
+    }
+    appVersion = String.format('%s.%s.%s-SNAPSHOT', majorVersion, minorVersion, patchVersion)
+    project.setVersion(appVersion)
+}
+
+def getTimestamp() {
+    def date = new Date()
+    def formattedDate = date.format('yyyyMMddHHmmss')
+    return formattedDate
+}
+
+idea {
+    project {
+        jdkName = java_version
+        languageLevel = java_version
+    }
+}
+
+dependencies {
+    compile 'org.seleniumhq.selenium:selenium-java:3.+'
+    testCompile 'org.testng:testng:6.+'
+}
+
+clean {
+    delete 'screenshots'
+}
+
+test {
+    useTestNG() {
+        parallel 'classes'
+        threadCount 5
+    }
+
+    testLogging {
+        events "PASSED", "FAILED", "SKIPPED"
+        //events "PASSED", "FAILED", "SKIPPED", "STANDARD_OUT", "STANDARD_ERROR"
+    }
+
+    def stdout = new LinkedList<String>()
+    beforeTest { TestDescriptor td ->
+        stdout.clear()
+    }
+
+    onOutput { TestDescriptor td, TestOutputEvent toe ->
+        stdout.addAll(toe.getMessage().split('(?m)$'))
+    }
+
+    afterTest { TestDescriptor td, TestResult tr ->
+        if (tr.resultType == TestResult.ResultType.FAILURE && stdout.size() > 0) {
+            println()
+            println("${td.className}.${td.name} failed, output:")
+            stdout.each { print(it) }
+        }
+    }
+
+    afterSuite { desc, result ->
+        if (!desc.parent) { // will match the outermost suite
+            println "\nResults: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+        }
+    }
+}
+
+task updateDrivers(type: Exec) {
+    executable = '/bin/bash'
+    args = ["scripts/UpdateWebDrivers.sh"]
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.1'
+}
+
+jar {
+    manifest {
+        attributes("Implementation-Title": "Gradle",
+                "Implementation-Version": appVersion)
+    }
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "file://localhost/tmp/mavenrepo/")
+            pom.version = appVersion
+            pom.artifactId = project.name
+            pom.groupId = project.group
+        }
+    }
+}
