@@ -13,4 +13,4 @@ cache:
     - $HOME/.gradle/wrapper/
 
 script:
-  - ./gradlew clean test
+  - ./gradlew clean preparePhantomJS test
