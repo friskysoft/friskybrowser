@@ -17,3 +17,4 @@ screenshots/
 **/*.ear
 hs_err_pid*
 **/resources/webdrivers/
+gradle.properties

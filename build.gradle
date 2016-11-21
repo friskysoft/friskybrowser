@@ -17,6 +17,7 @@ group 'com.friskysoft'
 
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'signing'
 apply plugin: 'idea'
 
 ext.javaVersion = '1.8'
@@ -32,11 +33,7 @@ repositories {
 project.ext {
     majorVersion = 0
     minorVersion = 0
-    patchVersion = System.getenv('BUILD_NUMBER')
-
-    if (patchVersion == null || patchVersion.isEmpty()) {
-        patchVersion = getTimestamp()
-    }
+    patchVersion = 1
     appVersion = String.format('%s.%s.%s-SNAPSHOT', majorVersion, minorVersion, patchVersion)
     project.setVersion(appVersion)
 }
@@ -104,10 +101,45 @@ jar {
 uploadArchives {
     repositories {
         mavenDeployer {
-            repository(url: "file://localhost/tmp/mavenrepo/")
-            pom.version = appVersion
-            pom.artifactId = project.name
-            pom.groupId = project.group
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            //repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+            //    authentication(userName: ossrhUsername, password: ossrhPassword)
+            //}
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name project.name
+                packaging 'jar'
+                artifactId project.name
+                version appVersion
+                groupId project.group
+                description project.name
+
+                url 'https://github.com/friskysoft/friskybrowser'
+
+                scm {
+                    url 'https://github.com/friskysoft/friskybrowser'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'hossain'
+                        name 'Rafaat Hossain'
+                        email 'rafaat123@gmail.com'
+                    }
+                }
+            }
         }
     }
 }
