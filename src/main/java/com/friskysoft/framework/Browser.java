@@ -64,7 +64,6 @@ public class Browser implements WebDriver {
     @SuppressWarnings("deprecation")
     public static Browser newInstance(String browserType) {
         WebDriver driver;
-        autoFindWebDriverExecutable(browserType);
         DesiredCapabilities capabilities = getDefaultBrowserCapabilities(browserType);
         switch (browserType) {
             case BrowserType.CHROME:
@@ -109,61 +108,6 @@ public class Browser implements WebDriver {
 
     private static URL getResource(String name) {
         return Thread.currentThread().getContextClassLoader().getResource(name);
-    }
-
-    private static void autoFindWebDriverExecutable(String browserType) {
-        URL webDriverLocation;
-        switch (browserType) {
-            case BrowserType.CHROME:
-                webDriverLocation = getResource("webdrivers/chromedriver_" + getPlatformType().name().toLowerCase() + getArchType().getValue());
-                if (webDriverLocation != null) {
-                    LOGGER.info("chromedriver found at: " + webDriverLocation);
-                    System.setProperty(CHROMEDRIVER_SYSTEM_PROPERTY, webDriverLocation.getPath() + "/chromedriver");
-                    break;
-                }
-
-                if (getPlatformType().equals(PlatformType.MAC)) {
-                    webDriverLocation = getResource("webdrivers/chromedriver_macosx");
-                    if (webDriverLocation != null) {
-                        LOGGER.info("chromedriver found at: " + webDriverLocation);
-                        System.setProperty(CHROMEDRIVER_SYSTEM_PROPERTY, webDriverLocation.getPath() + "/chromedriver");
-                        break;
-                    }
-                }
-
-                webDriverLocation = getResource("chromedriver");
-                if (webDriverLocation != null) {
-                    LOGGER.info("chromedriver found at: " + webDriverLocation);
-                    System.setProperty(CHROMEDRIVER_SYSTEM_PROPERTY, webDriverLocation.getPath());
-                    break;
-                }
-                break;
-
-            case BrowserType.FIREFOX:
-                webDriverLocation = getResource("webdrivers/geckodriver_" + getPlatformType().name().toLowerCase() + getArchType().getValue());
-                if (webDriverLocation != null) {
-                    LOGGER.info("geckodriver found at: " + webDriverLocation);
-                    System.setProperty(GECKODRIVER_SYSTEM_PROPERTY, webDriverLocation.getPath() + "/geckodriver");
-                    break;
-                }
-
-                if (getPlatformType().equals(PlatformType.MAC)) {
-                    webDriverLocation = getResource("webdrivers/geckodriver_macos");
-                    if (webDriverLocation != null) {
-                        LOGGER.info("geckodriver found at: " + webDriverLocation);
-                        System.setProperty(GECKODRIVER_SYSTEM_PROPERTY, webDriverLocation.getPath() + "/geckodriver");
-                        break;
-                    }
-                }
-
-                webDriverLocation = getResource("geckodriver");
-                if (webDriverLocation != null) {
-                    LOGGER.info("geckodriver found at: " + webDriverLocation);
-                    System.setProperty(GECKODRIVER_SYSTEM_PROPERTY, webDriverLocation.getPath());
-                    break;
-                }
-                break;
-        }
     }
 
     @SuppressWarnings("deprecation")
@@ -337,7 +281,7 @@ public class Browser implements WebDriver {
         return this;
     }
 
-    public Browser takeScreenshot() {
+    public String takeScreenshot() {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         String methodName = stackTraceElements[2].getMethodName();
         String className = stackTraceElements[2].getClassName();
@@ -350,15 +294,15 @@ public class Browser implements WebDriver {
                 format.format(new Date()), className, methodName, title));
     }
 
-    public Browser takeScreenshot(String filepath) {
+    public String takeScreenshot(String filepath) {
         try {
             File scrFile = ((TakesScreenshot) getWebDriver()).getScreenshotAs(OutputType.FILE);
             FileUtils.copyFile(scrFile, new File(filepath));
+            return new File(filepath).getAbsolutePath();
         } catch (IOException ioex) {
             ioex.printStackTrace();
-            // ignore
+            return null;
         }
-        return this;
     }
 
     public Browser setPageLoadTimeout(int time, TimeUnit unit) {

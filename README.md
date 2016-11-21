@@ -20,7 +20,7 @@ public class GooglePage {
 @Test
 public void sampleTest() {
 
-    browser = Browser.newInstance(BrowserType.PHANTOMJS)
+    Browser browser = Browser.newInstance(BrowserType.PHANTOMJS)
             .setPageLoadTimeout(30, TimeUnit.SECONDS)
             .setImplicitWait(5, TimeUnit.SECONDS);
 

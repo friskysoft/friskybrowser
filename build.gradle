@@ -41,6 +41,10 @@ idea {
 dependencies {
     compile 'org.seleniumhq.selenium:selenium-java:3.+'
     testCompile 'org.testng:testng:6.+'
+    testCompile 'io.github.bonigarcia:webdrivermanager:1.+'
+    testCompile 'org.slf4j:slf4j-simple:1.+'
+    testCompile 'log4j:log4j:1.2.17'
+
 }
 
 clean {
@@ -54,25 +58,7 @@ test {
     }
 
     testLogging {
-        events "PASSED", "FAILED", "SKIPPED"
-        //events "PASSED", "FAILED", "SKIPPED", "STANDARD_OUT", "STANDARD_ERROR"
-    }
-
-    def stdout = new LinkedList<String>()
-    beforeTest { TestDescriptor td ->
-        stdout.clear()
-    }
-
-    onOutput { TestDescriptor td, TestOutputEvent toe ->
-        stdout.addAll(toe.getMessage().split('(?m)$'))
-    }
-
-    afterTest { TestDescriptor td, TestResult tr ->
-        if (tr.resultType == TestResult.ResultType.FAILURE && stdout.size() > 0) {
-            println()
-            println("${td.className}.${td.name} failed, output:")
-            stdout.each { print(it) }
-        }
+        events "PASSED", "FAILED", "SKIPPED", "STANDARD_OUT", "STANDARD_ERROR"
     }
 
     afterSuite { desc, result ->
