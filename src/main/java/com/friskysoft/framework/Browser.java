@@ -61,6 +61,7 @@ public class Browser implements WebDriver {
         return singletonBrowser;
     }
 
+    @SuppressWarnings("deprecation")
     public static Browser newInstance(String browserType) {
         WebDriver driver;
         autoFindWebDriverExecutable(browserType);
@@ -165,6 +166,7 @@ public class Browser implements WebDriver {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static DesiredCapabilities getDefaultBrowserCapabilities(String browserType) {
         switch (browserType) {
             case BrowserType.CHROME:
