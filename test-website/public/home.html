@@ -1,0 +1,26 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="script.js"></script>
+</head>
+<body>
+<div class="content">
+    <h3>Search for an item</h3>
+    <form class="search">
+        <div class="row" id="category-input">
+            <label>Category:</label>
+            <input id="category" type="text" name="category" placeholder="Category"/>
+        </div>
+        <div class="row" id="name-input">
+            <label>Name:</label>
+            <input id="name" type="text" name="name" placeholder="Search Keyword"/>
+        </div>
+    </form>
+    <div id="search-button">
+        <button onclick="search()">Search</button>
+    </div>
+    <div id="flash-message" style="display: none"></div>
+</div>
+</body>
+</html>

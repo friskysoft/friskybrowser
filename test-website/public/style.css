@@ -1,0 +1,33 @@
+html {
+    font-family: sans-serif;
+}
+.content {
+    padding: 1rem;
+}
+
+form label {
+    display: inline-block;
+    font-size: 80%;
+    min-width: 6rem;
+    margin-bottom: 1rem;
+}
+
+.login input {
+    display: inline-block;
+    min-width: 10rem;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    color: white;
+    text-align: center;
+    background: #66aaaa;
+    border: 0;
+    cursor: pointer;
+}
+
+#flash-message {
+    margin-top: 1rem;
+    color: #ff0000;
+    font-size: 80%;
+}

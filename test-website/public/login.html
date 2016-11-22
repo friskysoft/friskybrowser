@@ -1,0 +1,26 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="script.js"></script>
+</head>
+<body>
+<div class="content">
+    <h3>Login to frisky item search</h3>
+    <form class="login">
+        <div class="row" id="username-input">
+            <label>Username:</label>
+            <input id="username" type="text" name="username" placeholder="Username"/>
+        </div>
+        <div class="row" id="password-input">
+            <label>Password:</label>
+            <input id="password" type="password" name="password" placeholder="Password"/>
+        </div>
+    </form>
+    <div id="submit-button">
+        <button onclick="login()">Login</button>
+    </div>
+    <div id="flash-message" style="display: none"></div>
+</div>
+</body>
+</html>

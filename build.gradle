@@ -1,6 +1,33 @@
-
-import org.apache.tools.ant.taskdefs.condition.Os
 import org.apache.commons.io.FileUtils
+import org.apache.tools.ant.taskdefs.condition.Os
+
+class ExecWait extends DefaultTask {
+    String command
+    String ready
+    String directory
+
+    @TaskAction
+    def spawnProcess() {
+
+        ProcessBuilder builder = new ProcessBuilder(command.split(' '))
+        builder.redirectErrorStream(true)
+        builder.directory(new File(directory))
+        Process process = builder.start()
+
+        InputStream stdout = process.getInputStream()
+        BufferedReader reader = new BufferedReader(new
+                InputStreamReader(stdout))
+
+        def line
+        while ((line = reader.readLine()) != null) {
+            println line
+            if (line.contains(ready)) {
+                println "$command is ready"
+                break;
+            }
+        }
+    }
+}
 
 buildscript {
     repositories {
@@ -12,6 +39,9 @@ buildscript {
     }
 }
 
+plugins {
+    id "com.moowork.node" version "0.13"
+}
 
 group 'com.friskysoft'
 
@@ -99,6 +129,16 @@ jar {
 }
 
 uploadArchives {
+
+    def repoUsername = ""
+    def repoPassword = ""
+    if (project.hasProperty('ossrhUsername')) {
+        repoUsername = ossrhUsername
+    }
+    if (project.hasProperty('ossrhPassword')) {
+        repoPassword = ossrhPassword
+    }
+
     repositories {
         mavenDeployer {
             beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
@@ -108,7 +148,7 @@ uploadArchives {
             //}
 
             snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
+                authentication(userName: repoUsername, password: repoPassword)
             }
 
             pom.project {
@@ -186,3 +226,24 @@ preparePhantomJS.dependsOn "downloadPhantomJS"
 tasks.withType(Test) {
     systemProperty "phantomjs.binary.path", System.getProperty("phantomjs.binary.path")
 }
+
+task stopNodeServer() {
+    def port = 8801
+    def cmd = "lsof -Fp -i :$port"
+    def process = cmd.execute()
+    process.in.eachLine { line ->
+        println "${line}"
+        println "${line.substring(1)}"
+        def killProcess = "kill -9 ${line.substring(1)}".execute()
+        killProcess.waitFor()
+    }
+}
+
+task startNodeServer(type: ExecWait) {
+    command 'node server.js'
+    ready 'Node server listening at http://localhost'
+    directory 'test-website'
+}
+
+startNodeServer.dependsOn 'stopNodeServer'
+build.finalizedBy(stopNodeServer)

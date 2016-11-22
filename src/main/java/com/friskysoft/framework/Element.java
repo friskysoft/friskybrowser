@@ -18,7 +18,7 @@ public class Element {
     private static final Log LOGGER = LogFactory.getLog(Element.class);
 
     enum LocatorType {
-        ID, XPATH, CSS, CLASSNAME, TAG, LINKTEXT, PARTIAL_LINKTEXT
+        ID, XPATH, CSS, CLASSNAME, TAG, NAME, LINKTEXT, PARTIAL_LINKTEXT
     }
 
     public Element(By by) {
@@ -42,14 +42,56 @@ public class Element {
             locatorType = LocatorType.CSS;
         } else if (locator.contains("/")) {
             locatorType = LocatorType.XPATH;
+        } else if (locator.toLowerCase().startsWith("id=")) {
+            locatorType = LocatorType.ID;
+            locator = locator.replaceFirst("id=", "");
+        } else if (locator.toLowerCase().startsWith("css=")) {
+            locatorType = LocatorType.CSS;
+            locator = locator.replaceFirst("css=", "");
+        } else if (locator.toLowerCase().startsWith("xpath=")) {
+            locatorType = LocatorType.XPATH;
+            locator = locator.replaceFirst("xpath=", "");
+        } else if (locator.toLowerCase().startsWith("name=")) {
+            locatorType = LocatorType.NAME;
+            locator = locator.replaceFirst("name=", "");
+        } else if (locator.toLowerCase().startsWith("class=")) {
+            locatorType = LocatorType.CLASSNAME;
+            locator = locator.replaceFirst("class=", "");
+        } else if (locator.toLowerCase().startsWith("classname=")) {
+            locatorType = LocatorType.CLASSNAME;
+            locator = locator.replaceFirst("classname=", "");
+        } else if (locator.toLowerCase().startsWith("linktext=")) {
+            locatorType = LocatorType.LINKTEXT;
+            locator = locator.replaceFirst("linktext=", "");
+        } else if (locator.toLowerCase().startsWith("tag=")) {
+            locatorType = LocatorType.TAG;
+            locator = locator.replaceFirst("tag=", "");
         } else {
             locatorType = LocatorType.CSS;
         }
 
-        if (locatorType == LocatorType.XPATH) {
-            setBy(By.xpath(locator));
-        } else {
-            setBy(By.cssSelector(locator));
+        switch (locatorType) {
+            case XPATH:
+                setBy(By.xpath(locator));
+                break;
+            case ID:
+                setBy(By.id(locator));
+                break;
+            case NAME:
+                setBy(By.name(locator));
+                break;
+            case TAG:
+                setBy(By.tagName(locator));
+                break;
+            case CLASSNAME:
+                setBy(By.className(locator));
+                break;
+            case LINKTEXT:
+                setBy(By.linkText(locator));
+                break;
+            case CSS:
+            default:
+                setBy(By.cssSelector(locator));
         }
     }
 

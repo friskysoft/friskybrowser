@@ -18,3 +18,4 @@ screenshots/
 hs_err_pid*
 **/resources/webdrivers/
 gradle.properties
+node_modules
