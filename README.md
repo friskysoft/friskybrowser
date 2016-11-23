@@ -56,6 +56,13 @@ Browser browser = Browser.newRemoteInstance("http://localhost:4444/wd/hub", Brow
 browser.open("https://www.friskysoft.com");
 ```
 
+#### Execute sync or async javascripts
+You can run any sync or async javascripts on the page you are testing. Frisky-Browser also injects jquery on page load, so you can use the jquery functions as well.
+```java
+browser.executeScript(script);
+browser.executeAsyncScript(script);
+```
+
 ### Sample test
 ```java
 @Test

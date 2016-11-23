@@ -258,7 +258,13 @@ public class Browser implements WebDriver {
     }
 
     public Browser fullscreen() {
-        getWebDriver().manage().window().fullscreen();
+        try {
+            getWebDriver().manage().window().fullscreen();
+        } catch (UnsupportedCommandException ex) {
+            int w = Integer.parseInt(executeScript("return screen.width").toString());
+            int h = Integer.parseInt(executeScript("return screen.height").toString());
+            resize(w, h);
+        }
         return this;
     }
 
