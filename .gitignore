@@ -6,11 +6,11 @@
 **/.project
 **/.gradle
 **/.DS_Store
-build/
-out/
+**/build/
+**/out/
 bin/
 tools/
-screenshots/
+**/screenshots/
 .mtj.tmp
 **/*.jar
 **/*.war
