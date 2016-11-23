@@ -81,3 +81,4 @@ public void loginTest() {
 }
 ```
 
+Visit this link for a full example project: https://github.com/friskysoft/friskybrowser-example
