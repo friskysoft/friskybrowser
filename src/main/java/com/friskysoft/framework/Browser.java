@@ -20,12 +20,12 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -94,7 +94,7 @@ public class Browser implements WebDriver {
                 break;
         }
         setWebDriver(driver);
-        return newInstance().resize(1500, 1000);
+        return newInstance().fullscreen();
     }
 
     public static Browser newInstance(WebDriver driver) {
@@ -102,7 +102,19 @@ public class Browser implements WebDriver {
         return newInstance();
     }
 
-    public static Browser newInstance(URL remoteHubUrl, String browserType) {
+    public static Browser newRemoteInstance(String remoteHubUrl, String browserType) {
+        URL url; 
+        try {
+            url = new URL(remoteHubUrl);
+        } catch (MalformedURLException ex) {
+            throw new AssertionError("Invalid remote hub url: " + remoteHubUrl);
+        }
+        WebDriver remoteDriver = new RemoteWebDriver(url, getDefaultBrowserCapabilities(browserType));
+        setWebDriver(remoteDriver);
+        return newInstance();
+    }
+
+    public static Browser newRemoteInstance(URL remoteHubUrl, String browserType) {
         WebDriver remoteDriver = new RemoteWebDriver(remoteHubUrl, getDefaultBrowserCapabilities(browserType));
         setWebDriver(remoteDriver);
         return newInstance();
@@ -245,6 +257,11 @@ public class Browser implements WebDriver {
         return getWebDriver().manage();
     }
 
+    public Browser fullscreen() {
+        getWebDriver().manage().window().fullscreen();
+        return this;
+    }
+
     public Browser resize(int width, int height) {
         getWebDriver().manage().window().setPosition(new Point(0,0));
         getWebDriver().manage().window().setSize(new Dimension(width, height));
@@ -268,19 +285,11 @@ public class Browser implements WebDriver {
     }
 
     public Object injectJQuery() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource("jquery-loader.js").getFile());
-        StringBuilder script = new StringBuilder();
-        try (Scanner scanner = new Scanner(file)) {
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                script.append(line).append("\n");
-            }
-            scanner.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return executeAsyncScript(script.toString());
+        return injectJQuery("3.1.1");
+    }
+
+    public Object injectJQuery(String version) {
+        return executeAsyncScript(String.format(Utilities.JQUERY_LOADER_SCRIPT, version));
     }
 
     public void destroy() {
