@@ -8,6 +8,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.opera.OperaDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.BrowserType;
@@ -24,6 +25,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -175,6 +177,12 @@ public class Browser implements WebDriver {
     public void get(String url) {
         LOGGER.info("Opening page at url: " + url);
         getWebDriver().get(url);
+        try {
+            injectJQuery();
+        } catch (Throwable tr) {
+            // fail silently
+            LOGGER.debug("Injecting of jquery failed. Error: " + tr.getMessage());
+        }
     }
 
     @Override
@@ -241,6 +249,38 @@ public class Browser implements WebDriver {
         getWebDriver().manage().window().setPosition(new Point(0,0));
         getWebDriver().manage().window().setSize(new Dimension(width, height));
         return this;
+    }
+
+    public Actions getActions() {
+        return new Actions(getWebDriver());
+    }
+
+    public JavascriptExecutor getJavascriptExecutor() {
+        return (JavascriptExecutor)(getWebDriver());
+    }
+
+    public Object executeScript(String script, Object... args) {
+        return getJavascriptExecutor().executeScript(script, args);
+    }
+
+    public Object executeAsyncScript(String script, Object... args) {
+        return getJavascriptExecutor().executeAsyncScript(script, args);
+    }
+
+    public Object injectJQuery() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        File file = new File(classLoader.getResource("jquery-loader.js").getFile());
+        StringBuilder script = new StringBuilder();
+        try (Scanner scanner = new Scanner(file)) {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                script.append(line).append("\n");
+            }
+            scanner.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return executeAsyncScript(script.toString());
     }
 
     public void destroy() {

@@ -8,6 +8,10 @@ public class LoginPage {
 
     public static final String url = TestConstants.TEST_URL;
 
+    public static final Element username = new Element("#username");
+    public static final Element password = new Element("#password");
+    public static final Element submit = new Element("#submit-button button");
+
     public static final Element username_css = new Element(".login [name=username]");
     public static final Element password_css = new Element("#password");
     public static final Element submit_css = new Element("#submit-button button");
@@ -18,5 +22,7 @@ public class LoginPage {
 
     public static final Element username_id = new Element(By.id("username"));
     public static final Element password_id = new Element("id=password");
+
+    public static final Element flash_message = new Element("#flash-message");
 
 }

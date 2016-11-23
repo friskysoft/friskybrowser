@@ -13,6 +13,4 @@ cache:
     - $HOME/.gradle/wrapper/
 
 script:
-  - cd test-website && npm install && cd ..
-  - ./gradlew clean preparePhantomJS startNodeServer test stopNodeServer
-
+  - bash build.sh

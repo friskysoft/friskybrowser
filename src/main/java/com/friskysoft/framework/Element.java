@@ -31,16 +31,12 @@ public class Element {
 
     public Element(String locator) {
         LocatorType locatorType;
-        if (locator ==  null || locator.isEmpty()) {
+        if (locator == null || locator.isEmpty()) {
             throw new IllegalArgumentException("Locator cannot be null or empty");
         }
         if (locator.startsWith(".") || locator.startsWith("#")) {
             locatorType = LocatorType.CSS;
         } else if (locator.startsWith("/")) {
-            locatorType = LocatorType.XPATH;
-        } else if (locator.contains("#")) {
-            locatorType = LocatorType.CSS;
-        } else if (locator.contains("/")) {
             locatorType = LocatorType.XPATH;
         } else if (locator.toLowerCase().startsWith("id=")) {
             locatorType = LocatorType.ID;
@@ -66,6 +62,10 @@ public class Element {
         } else if (locator.toLowerCase().startsWith("tag=")) {
             locatorType = LocatorType.TAG;
             locator = locator.replaceFirst("tag=", "");
+        } else if (locator.contains("text()")) {
+            locatorType = LocatorType.XPATH;
+        } else if (locator.contains("/")) {
+            locatorType = LocatorType.XPATH;
         } else {
             locatorType = LocatorType.CSS;
         }
@@ -110,7 +110,7 @@ public class Element {
             return wrappedBy.toString();
         } else if (wrappedElement != null) {
             String locatorString = wrappedElement.toString();
-            String[] locators = locatorString.replace("[","").replace("]","").split("->");
+            String[] locators = locatorString.replace("[", "").replace("]", "").split("->");
             if (locators.length > 1) {
                 return locators[1].trim();
             } else {
@@ -243,6 +243,11 @@ public class Element {
         return getWebElement().getText();
     }
 
+    public String getValue() {
+        LOGGER.info("Element getValue: " + this);
+        return getWebElement().getAttribute("value");
+    }
+
     public boolean isDisplayed() {
         return getWebElement().isDisplayed();
     }
@@ -281,4 +286,37 @@ public class Element {
         webElements.forEach(webElement -> elements.add(new Element(webElement)));
         return elements;
     }
+
+    private Object executeScript(String script, Object... args) {
+        return ((JavascriptExecutor) Browser.getWebDriver()).executeScript(script, args);
+    }
+
+    private String getJQuerySelector() {
+        String selector = wrappedBy.toString().split(": ")[1];
+        selector = selector.replace("\"", "'");
+        if (wrappedBy.toString().startsWith("By.selector: ") || wrappedBy.toString().startsWith("By.cssSelector: ")) {
+            return "$(\"" + selector + "\")";
+        } else if (wrappedBy.toString().startsWith("By.xpath: ")) {
+            return "$x(\"" + selector + "\")";
+        } else {
+            throw new InvalidSelectorException("Identifier not supported");
+        }
+    }
+
+    public Element triggerClick() {
+        LOGGER.info("Element javascript click: " + this);
+        executeScript(getJQuerySelector() + ".trigger('click')");
+        return this;
+    }
+
+    public Element triggerHover() {
+        LOGGER.info("Element javascript hover: " + this);
+        executeScript(getJQuerySelector() + ".trigger('mouseenter')");
+        return this;
+    }
+
+    public Element hover() {
+        return triggerHover();
+    }
+
 }

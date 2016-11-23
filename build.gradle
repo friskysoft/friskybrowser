@@ -52,6 +52,8 @@ apply plugin: 'idea'
 
 ext.javaVersion = '1.8'
 ext.phantomJsVersion = '2.1.1'
+ext.nodeVersion = '6.9.1'
+ext.npmVersion = '3.10.8'
 
 sourceCompatibility = javaVersion
 
@@ -227,13 +229,25 @@ tasks.withType(Test) {
     systemProperty "phantomjs.binary.path", System.getProperty("phantomjs.binary.path")
 }
 
+node {
+    version = nodeVersion
+    npmVersion = npmVersion
+    distBaseUrl = 'https://nodejs.org/dist'
+    download = true
+    workDir = file("${project.buildDir}/nodejs")
+    nodeModulesDir = file("${project.projectDir}")
+}
+
+task buildNodeServer(type: NpmTask) {
+    args = ['--prefix', './test-website', 'install', './test-website']
+}
+
 task stopNodeServer() {
     def port = 8801
     def cmd = "lsof -Fp -i :$port"
     def process = cmd.execute()
     process.in.eachLine { line ->
-        println "${line}"
-        println "${line.substring(1)}"
+        println "killing process ${line.substring(1)} to free up port $port"
         def killProcess = "kill -9 ${line.substring(1)}".execute()
         killProcess.waitFor()
     }

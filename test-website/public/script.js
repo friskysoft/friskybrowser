@@ -19,6 +19,6 @@ function login() {
     if (errmsg) {
         var flash_msg_element = document.getElementById("flash-message");
         flash_msg_element.innerHTML = errmsg;
-        flash_msg_element.style = "display: block";
+        flash_msg_element.style.cssText = "display: block";
     }
 }
