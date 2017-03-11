@@ -3,6 +3,7 @@ package com.friskysoft.framework;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -121,9 +122,14 @@ public class Element {
         }
     }
 
+    public WebDriver getDriver() {
+        // returns the thread static webdriver for this thread
+        return Browser.getWebDriver();
+    }
+
     public WebElement getWebElement() {
         if (wrappedElement == null) {
-            return Browser.getWebDriver().findElement(getBy());
+            return getDriver().findElement(getBy());
         } else {
             return wrappedElement;
         }
@@ -134,7 +140,7 @@ public class Element {
     }
 
     public List<WebElement> getWebElements() {
-        return Browser.getWebDriver().findElements(getBy());
+        return getDriver().findElements(getBy());
     }
 
     public Element click() {
@@ -149,7 +155,7 @@ public class Element {
 
     public Element waitToBeVisible(int timeOutInSeconds) {
         LOGGER.info("Waiting for element to be visible: " + this);
-        new WebDriverWait(Browser.getWebDriver(), timeOutInSeconds).until(ExpectedConditions.visibilityOfElementLocated(wrappedBy));
+        new WebDriverWait(getDriver(), timeOutInSeconds).until(ExpectedConditions.visibilityOfElementLocated(wrappedBy));
         return this;
     }
 
@@ -159,7 +165,7 @@ public class Element {
 
     public Element waitToBePresent(int timeOutInSeconds) {
         LOGGER.info("Waiting for element to be present: " + this);
-        new WebDriverWait(Browser.getWebDriver(), timeOutInSeconds).until(ExpectedConditions.presenceOfElementLocated(wrappedBy));
+        new WebDriverWait(getDriver(), timeOutInSeconds).until(ExpectedConditions.presenceOfElementLocated(wrappedBy));
         return this;
     }
 
@@ -169,7 +175,7 @@ public class Element {
 
     public Element waitToBeClickable(int timeOutInSeconds) {
         LOGGER.info("Waiting for element to be clickable: " + this);
-        new WebDriverWait(Browser.getWebDriver(), timeOutInSeconds).until(ExpectedConditions.elementToBeClickable(wrappedBy));
+        new WebDriverWait(getDriver(), timeOutInSeconds).until(ExpectedConditions.elementToBeClickable(wrappedBy));
         return this;
     }
 
@@ -288,7 +294,7 @@ public class Element {
     }
 
     private Object executeScript(String script, Object... args) {
-        return ((JavascriptExecutor) Browser.getWebDriver()).executeScript(script, args);
+        return ((JavascriptExecutor) getDriver()).executeScript(script, args);
     }
 
     private String getJQuerySelector() {
@@ -317,6 +323,24 @@ public class Element {
 
     public Element hover() {
         return triggerHover();
+    }
+
+    public Element dragTo(Element destination) {
+        LOGGER.info("Dragging element: " + this + " to: " + destination);
+        Actions actions = new Actions(getDriver());
+        actions.dragAndDrop(this.getWebElement(), destination.getWebElement()).perform();
+        return this;
+    }
+
+    public Element scrollIntoView() {
+        LOGGER.info("Scrolling element into view: " + this);
+        try {
+            executeScript("arguments[0].scrollIntoView(true);", getWebElement());
+        } catch (Exception ex) {
+            Actions actions = new Actions(getDriver());
+            actions.moveToElement(getWebElement()).perform();
+        }
+        return this;
     }
 
 }

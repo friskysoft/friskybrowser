@@ -260,10 +260,14 @@ public class Browser implements WebDriver {
     public Browser fullscreen() {
         try {
             getWebDriver().manage().window().fullscreen();
-        } catch (UnsupportedCommandException ex) {
-            int w = Integer.parseInt(executeScript("return screen.width").toString());
-            int h = Integer.parseInt(executeScript("return screen.height").toString());
-            resize(w, h);
+        } catch (Exception ex1) {
+            try {
+                int w = Integer.parseInt(executeScript("return screen.width").toString());
+                int h = Integer.parseInt(executeScript("return screen.height").toString());
+                resize(w, h);
+            } catch (Exception ex2) {
+                LOGGER.warn(String.format("Fullscreen failed with errors <%s> and <%s> ", ex1.getMessage(), ex2.getMessage()));
+            }
         }
         return this;
     }

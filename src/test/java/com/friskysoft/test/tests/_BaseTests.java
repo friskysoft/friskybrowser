@@ -10,19 +10,28 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.remote.BrowserType;
 import org.testng.ITestResult;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.*;
 
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 public class _BaseTests {
 
     Browser browser;
     String browserType = BrowserType.PHANTOMJS;
+    String baseUrl = null;
+    String loginPath = "/login.html";
+    String homePath = "/home.html";
 
     protected Log getLogger() {
         return LogFactory.getLog(this.getClass());
+    }
+
+    @BeforeClass
+    public void setupBaseUrl() throws Exception {
+        URL resource = this.getClass().getResource("/test-web");
+        baseUrl = "file://" + resource.getPath();
     }
 
     @BeforeClass

@@ -6,8 +6,6 @@ import org.openqa.selenium.By;
 
 public class LoginPage {
 
-    public static final String url = TestConstants.TEST_URL;
-
     public static final Element username = new Element("#username");
     public static final Element password = new Element("#password");
     public static final Element submit = new Element("#submit-button button");

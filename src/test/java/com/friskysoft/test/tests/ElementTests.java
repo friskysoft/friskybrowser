@@ -11,7 +11,7 @@ public class ElementTests extends _BaseTests {
 
     @BeforeMethod
     public void openUrl() {
-        browser.open(LoginPage.url);
+        browser.open(baseUrl + loginPath);
     }
 
     @Test
@@ -19,7 +19,7 @@ public class ElementTests extends _BaseTests {
         LoginPage.username_css.type(TestConstants.TEST_USERNAME);
         LoginPage.password_css.type(TestConstants.TEST_PASSWORD);
         LoginPage.submit_css.click();
-        Assert.assertEquals(browser.getCurrentUrl(), HomePage.url);
+        Assert.assertEquals(browser.getCurrentUrl(), baseUrl + homePath);
     }
 
     @Test
@@ -27,7 +27,7 @@ public class ElementTests extends _BaseTests {
         LoginPage.username_xpath.type(TestConstants.TEST_USERNAME);
         LoginPage.password_xpath.type(TestConstants.TEST_PASSWORD);
         LoginPage.submit_xpath.click();
-        Assert.assertEquals(browser.getCurrentUrl(), HomePage.url);
+        Assert.assertEquals(browser.getCurrentUrl(), baseUrl + homePath);
     }
 
     @Test
@@ -35,7 +35,7 @@ public class ElementTests extends _BaseTests {
         LoginPage.username_id.type(TestConstants.TEST_USERNAME);
         LoginPage.password_id.type(TestConstants.TEST_PASSWORD);
         LoginPage.submit_css.click();
-        Assert.assertEquals(browser.getCurrentUrl(), HomePage.url);
+        Assert.assertEquals(browser.getCurrentUrl(), baseUrl + homePath);
     }
 
     @Test

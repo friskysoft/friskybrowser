@@ -11,7 +11,7 @@ public class BrowserTests extends _BaseTests {
 
     @BeforeMethod
     public void openUrl() {
-        browser.open(LoginPage.url);
+        browser.open(baseUrl + loginPath);
     }
 
     @Test
@@ -21,42 +21,42 @@ public class BrowserTests extends _BaseTests {
         LoginPage.username.clear().type(TestConstants.TEST_USERNAME);
         LoginPage.password.clear();
         LoginPage.submit.click();
-        Assert.assertNotEquals(browser.getCurrentUrl(), HomePage.url);
+        Assert.assertEquals(browser.getCurrentUrl(), baseUrl + loginPath);
         actualMessage = LoginPage.flash_message.waitToBeVisible().getText();
         Assert.assertEquals(actualMessage, "Password cannot be empty");
 
         LoginPage.username.clear();
         LoginPage.password.clear().type(TestConstants.TEST_PASSWORD);
         LoginPage.submit.click();
-        Assert.assertNotEquals(browser.getCurrentUrl(), HomePage.url);
+        Assert.assertEquals(browser.getCurrentUrl(), baseUrl + loginPath);
         actualMessage = LoginPage.flash_message.waitToBeVisible().getText();
         Assert.assertEquals(actualMessage, "Username cannot be empty");
 
         LoginPage.username.clear();
         LoginPage.password.clear();
         LoginPage.submit.click();
-        Assert.assertNotEquals(browser.getCurrentUrl(), HomePage.url);
+        Assert.assertEquals(browser.getCurrentUrl(), baseUrl + loginPath);
         actualMessage = LoginPage.flash_message.waitToBeVisible().getText();
         Assert.assertEquals(actualMessage, "Username and Password cannot be empty");
 
         LoginPage.username.clear().type("abc");
         LoginPage.password.clear().type("123");
         LoginPage.submit.click();
-        Assert.assertNotEquals(browser.getCurrentUrl(), HomePage.url);
+        Assert.assertEquals(browser.getCurrentUrl(), baseUrl + loginPath);
         actualMessage = LoginPage.flash_message.waitToBeVisible().getText();
         Assert.assertEquals(actualMessage, "Bad Credentials");
 
         LoginPage.username.clear().type(TestConstants.TEST_USERNAME);
         LoginPage.password.clear().type(TestConstants.TEST_PASSWORD);
         LoginPage.submit.click();
-        Assert.assertEquals(browser.getCurrentUrl(), HomePage.url);
+        Assert.assertEquals(browser.getCurrentUrl(), baseUrl + homePath);
 
     }
 
     @Test
     public void jqueryTriggers() {
         LoginPage.submit.triggerHover().triggerClick();
-        Assert.assertNotEquals(browser.getCurrentUrl(), HomePage.url);
+        Assert.assertEquals(browser.getCurrentUrl(), baseUrl + loginPath);
         String actualMessage = LoginPage.flash_message.waitToBeVisible().getText();
         Assert.assertEquals(actualMessage, "Username and Password cannot be empty");
     }
