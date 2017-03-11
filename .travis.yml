@@ -13,4 +13,4 @@ cache:
     - $HOME/.gradle/wrapper/
 
 script:
-  - bash build.sh
+  - ./gradlew test
