@@ -8,13 +8,18 @@
 <div class="content">
     <h3>Search for an item</h3>
     <form class="search">
-        <div class="row" id="category-input">
+        <div class="row" id="category-select">
             <label>Category:</label>
-            <input id="category" type="text" name="category" placeholder="Category"/>
+            <select id="category">
+                <option value="cmr">Camera</option>
+                <option value="lpt">Laptop</option>
+                <option value="tab">Tablet</option>
+                <option value="phn">Phone</option>
+            </select>
         </div>
-        <div class="row" id="name-input">
-            <label>Name:</label>
-            <input id="name" type="text" name="name" placeholder="Search Keyword"/>
+        <div class="row" id="search-input">
+            <label>Search:</label>
+            <input id="search" type="text" name="search" placeholder="Search Keyword"/>
         </div>
     </form>
     <div id="search-button">
