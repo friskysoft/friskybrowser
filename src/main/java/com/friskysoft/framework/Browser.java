@@ -7,6 +7,7 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.opera.OperaDriver;
@@ -88,6 +89,9 @@ public class Browser implements WebDriver {
             case BrowserType.EDGE:
                 driver = new EdgeDriver(capabilities);
                 break;
+            case BrowserType.HTMLUNIT:
+                driver = new HtmlUnitDriver(capabilities);
+                break;
             case BrowserType.PHANTOMJS:
             default:
                 driver = new PhantomJSDriver(capabilities);
@@ -139,6 +143,8 @@ public class Browser implements WebDriver {
             case BrowserType.IE:
             case BrowserType.IEXPLORE:
                 return DesiredCapabilities.internetExplorer();
+            case BrowserType.HTMLUNIT:
+                return DesiredCapabilities.htmlUnit();
             default:
                 return DesiredCapabilities.phantomjs();
         }
@@ -189,12 +195,6 @@ public class Browser implements WebDriver {
     public void get(String url) {
         LOGGER.info("Opening page at url: " + url);
         getWebDriver().get(url);
-        try {
-            injectJQuery();
-        } catch (Throwable tr) {
-            // fail silently
-            LOGGER.debug("Injecting of jquery failed. Error: " + tr.getMessage());
-        }
     }
 
     @Override
@@ -295,7 +295,7 @@ public class Browser implements WebDriver {
     }
 
     public Object injectJQuery() {
-        return injectJQuery("3.1.1");
+        return injectJQuery("3.0.0");
     }
 
     public Object injectJQuery(String version) {

@@ -1,31 +1,35 @@
-package com.friskysoft.test.tests;
+package com.friskysoft.test.framework;
 
 import com.friskysoft.framework.Browser;
+import com.friskysoft.test.pages.HomePage;
+import com.friskysoft.test.pages.LoginPage;
 import com.friskysoft.test.utils.ImageUploader;
 import com.friskysoft.test.utils.TestConstants;
 import io.github.bonigarcia.wdm.ChromeDriverManager;
+import io.github.bonigarcia.wdm.FirefoxDriverManager;
 import io.github.bonigarcia.wdm.PhantomJsDriverManager;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.remote.BrowserType;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
+import org.testng.log4testng.Logger;
 
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
-public class _BaseTests {
+public class BaseTests {
 
-    Browser browser;
-    String browserType = BrowserType.PHANTOMJS;
-    String baseUrl = null;
-    String loginPath = "/login.html";
-    String homePath = "/home.html";
+    protected Browser browser;
+    protected String browserType = BrowserType.PHANTOMJS;
+    protected String baseUrl = null;
+    protected String loginPath = "/login.html";
+    protected String homePath = "/home.html";
 
-    protected Log getLogger() {
-        return LogFactory.getLog(this.getClass());
+    protected HomePage homePage = new HomePage();
+    protected LoginPage loginPage = new LoginPage();
+
+    protected Logger getLogger() {
+        return Logger.getLogger(this.getClass());
     }
 
     @BeforeClass
@@ -41,6 +45,9 @@ public class _BaseTests {
         }
         if (browserType.equals(BrowserType.CHROME) && StringUtils.isBlank(System.getProperty(TestConstants.CHROMEDRIVER_SYSTEM_PROPERTY))) {
             ChromeDriverManager.getInstance().setup();
+        }
+        if (browserType.equals(BrowserType.FIREFOX) && StringUtils.isBlank(System.getProperty(TestConstants.GECKODRIVER_SYSTEM_PROPERTY))) {
+            FirefoxDriverManager.getInstance().setup();
         }
         browser = Browser.newInstance(browserType)
                 .setPageLoadTimeout(30, TimeUnit.SECONDS)

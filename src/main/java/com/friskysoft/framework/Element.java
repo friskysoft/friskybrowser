@@ -6,6 +6,7 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.LinkedList;
@@ -19,7 +20,7 @@ public class Element {
     private static final Log LOGGER = LogFactory.getLog(Element.class);
 
     enum LocatorType {
-        ID, XPATH, CSS, CLASSNAME, TAG, NAME, LINKTEXT, PARTIAL_LINKTEXT
+        ID, XPATH, CSS, CLASS_NAME, TAG, NAME, LINK_TEXT, PARTIAL_LINK_TEXT
     }
 
     public Element(By by) {
@@ -52,13 +53,13 @@ public class Element {
             locatorType = LocatorType.NAME;
             locator = locator.replaceFirst("name=", "");
         } else if (locator.toLowerCase().startsWith("class=")) {
-            locatorType = LocatorType.CLASSNAME;
+            locatorType = LocatorType.CLASS_NAME;
             locator = locator.replaceFirst("class=", "");
         } else if (locator.toLowerCase().startsWith("classname=")) {
-            locatorType = LocatorType.CLASSNAME;
+            locatorType = LocatorType.CLASS_NAME;
             locator = locator.replaceFirst("classname=", "");
         } else if (locator.toLowerCase().startsWith("linktext=")) {
-            locatorType = LocatorType.LINKTEXT;
+            locatorType = LocatorType.LINK_TEXT;
             locator = locator.replaceFirst("linktext=", "");
         } else if (locator.toLowerCase().startsWith("tag=")) {
             locatorType = LocatorType.TAG;
@@ -84,11 +85,14 @@ public class Element {
             case TAG:
                 setBy(By.tagName(locator));
                 break;
-            case CLASSNAME:
+            case CLASS_NAME:
                 setBy(By.className(locator));
                 break;
-            case LINKTEXT:
+            case LINK_TEXT:
                 setBy(By.linkText(locator));
+                break;
+            case PARTIAL_LINK_TEXT:
+                setBy(By.partialLinkText(locator));
                 break;
             case CSS:
             default:
@@ -254,8 +258,24 @@ public class Element {
         return getWebElement().getAttribute("value");
     }
 
+    public Element getSelectedOption() {
+        LOGGER.info("Element getSelectedOption: " + this);
+        return new Element(getSelectElement().getFirstSelectedOption());
+    }
+
     public boolean isDisplayed() {
-        return getWebElement().isDisplayed();
+        try {
+            Wait wait = new WebDriverWait(getDriver(), 2);
+            wait.until(ExpectedConditions.visibilityOf(getWebElement()));
+            return true;
+        } catch (Throwable tr) {
+            return false;
+        }
+    }
+
+    public boolean isPresent() {
+        return isDisplayed();
+
     }
 
     public Point getLocation() {

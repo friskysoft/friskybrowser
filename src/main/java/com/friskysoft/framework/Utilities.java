@@ -5,7 +5,7 @@ public class Utilities {
     public static final String JQUERY_LOADER_SCRIPT = "/** dynamically load jQuery */ "+
             "(function(jqueryUrl, callback) { "+
             "    if (typeof jqueryUrl != 'string') { "+
-            "        jqueryUrl = 'https://ajax.googleapis.com/ajax/libs/jquery/%s/jquery.min.js'; "+
+            "        jqueryUrl = 'https://code.jquery.com/jquery-%s.min.js'; "+
             "    } "+
             "    if (typeof jQuery == 'undefined') { "+
             "        var script = document.createElement('script'); "+

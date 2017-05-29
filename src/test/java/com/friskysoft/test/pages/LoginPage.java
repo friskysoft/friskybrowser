@@ -6,21 +6,36 @@ import org.openqa.selenium.By;
 
 public class LoginPage {
 
-    public static final Element username = new Element("#username");
-    public static final Element password = new Element("#password");
-    public static final Element submit = new Element("#submit-button button");
+    public Element username = new Element("#username");
+    public Element password = new Element("#password");
+    public Element submit = new Element("#submit-button button");
 
-    public static final Element username_css = new Element(".login [name=username]");
-    public static final Element password_css = new Element("#password");
-    public static final Element submit_css = new Element("#submit-button button");
+    public Element usernameCss = new Element(".login [name=username]");
+    public Element passwordCss = new Element("#password");
+    public Element submitCss = new Element("#submit-button button");
 
-    public static final Element username_xpath = new Element("//*[@id='username']");
-    public static final Element password_xpath = new Element("//input[@name='password']");
-    public static final Element submit_xpath = new Element("//*[@id='submit-button']//button");
+    public Element usernameXpath = new Element("//*[@id='username']");
+    public Element passwordXpath = new Element("//input[@name='password']");
+    public Element submitXpath = new Element("//*[@id='submit-button']//button");
 
-    public static final Element username_id = new Element(By.id("username"));
-    public static final Element password_id = new Element("id=password");
+    public Element usernameId = new Element(By.id("username"));
+    public Element passwordId = new Element("id=password");
 
-    public static final Element flash_message = new Element("#flash-message");
+    public Element flashMessage = new Element("#flash-message");
 
+    public Element notPresentElement = new Element("#not-present");
+
+    public LoginPage login(String username, String password) {
+        this.username.clear().type(username);
+        this.password.clear().type(password);
+        this.submit.click();
+        return this;
+    }
+
+    public LoginPage login() {
+        this.username.clear().type(TestConstants.TEST_USERNAME);
+        this.password.clear().type(TestConstants.TEST_PASSWORD);
+        this.submit.click();
+        return this;
+    }
 }

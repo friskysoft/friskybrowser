@@ -7,4 +7,5 @@ public class TestConstants {
 
     public static final String PHANTOMJS_SYSTEM_PROPERTY = "phantomjs.binary.path";
     public static final String CHROMEDRIVER_SYSTEM_PROPERTY = "webdriver.chrome.driver";
+    public static final String GECKODRIVER_SYSTEM_PROPERTY = "webdriver.gecko.driver";
 }
