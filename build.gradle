@@ -30,8 +30,7 @@ project.ext {
     majorVersion = 0
     minorVersion = 0
     patchVersion = 1
-    appVersion = String.format('%s.%s.%s-SNAPSHOT', majorVersion, minorVersion, patchVersion)
-    project.setVersion(appVersion)
+    project.setVersion(String.format('%s.%s.%s-SNAPSHOT', majorVersion, minorVersion, patchVersion))
 }
 
 def getTimestamp() {
@@ -86,8 +85,12 @@ wrapper {
 
 jar {
     manifest {
-        attributes("Implementation-Title": "Gradle",
-                   "Implementation-Version": appVersion)
+        attributes(
+                "Name": project.name,
+                "Implementation-Title": project.name,
+                "Implementation-Version": project.version,
+                "Implementation-Vendor": "FriskySoft"
+        )
     }
 }
 
@@ -118,7 +121,7 @@ uploadArchives {
                 name project.name
                 packaging 'jar'
                 artifactId project.name
-                version appVersion
+                version project.version
                 groupId project.group
                 description project.name
 
