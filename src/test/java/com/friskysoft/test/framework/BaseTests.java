@@ -33,22 +33,13 @@ public class BaseTests {
     }
 
     @BeforeClass
-    public void setupBaseUrl() throws Exception {
+    public void setupBaseUrl() {
         URL resource = this.getClass().getResource("/test-web");
         baseUrl = "file://" + resource.getPath();
     }
 
     @BeforeClass
-    public void setupBrowser() throws Exception {
-        if (browserType.equals(BrowserType.PHANTOMJS) && StringUtils.isBlank(System.getProperty(TestConstants.PHANTOMJS_SYSTEM_PROPERTY))) {
-            PhantomJsDriverManager.getInstance().setup();
-        }
-        if (browserType.equals(BrowserType.CHROME) && StringUtils.isBlank(System.getProperty(TestConstants.CHROMEDRIVER_SYSTEM_PROPERTY))) {
-            ChromeDriverManager.getInstance().setup();
-        }
-        if (browserType.equals(BrowserType.FIREFOX) && StringUtils.isBlank(System.getProperty(TestConstants.GECKODRIVER_SYSTEM_PROPERTY))) {
-            FirefoxDriverManager.getInstance().setup();
-        }
+    public void setupBrowser() {
         browser = Browser.newInstance(browserType)
                 .setPageLoadTimeout(30, TimeUnit.SECONDS)
                 .setImplicitWait(5, TimeUnit.SECONDS);

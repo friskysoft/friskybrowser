@@ -1,17 +1,17 @@
 package com.friskysoft.framework;
 
+import io.github.bonigarcia.wdm.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.opera.OperaDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -70,9 +70,11 @@ public class Browser implements WebDriver {
         DesiredCapabilities capabilities = getDefaultBrowserCapabilities(browserType);
         switch (browserType) {
             case BrowserType.CHROME:
+                ChromeDriverManager.getInstance().setup();
                 driver = new ChromeDriver(capabilities);
                 break;
             case BrowserType.FIREFOX:
+                FirefoxDriverManager.getInstance().setup();
                 driver = new FirefoxDriver(capabilities);
                 break;
             case BrowserType.SAFARI:
@@ -80,21 +82,25 @@ public class Browser implements WebDriver {
                 break;
             case BrowserType.OPERA:
             case BrowserType.OPERA_BLINK:
+                OperaDriverManager.getInstance().setup();
                 driver = new OperaDriver(capabilities);
                 break;
             case BrowserType.IE:
             case BrowserType.IEXPLORE:
+                InternetExplorerDriverManager.getInstance().setup();
                 driver = new InternetExplorerDriver(capabilities);
                 break;
             case BrowserType.EDGE:
+                EdgeDriverManager.getInstance().setup();
                 driver = new EdgeDriver(capabilities);
                 break;
             case BrowserType.HTMLUNIT:
-                driver = new HtmlUnitDriver(capabilities);
-                break;
             case BrowserType.PHANTOMJS:
             default:
-                driver = new PhantomJSDriver(capabilities);
+                ChromeDriverManager.getInstance().setup();
+                ChromeOptions chromeOptions = new ChromeOptions();
+                chromeOptions.addArguments("--headless");
+                driver = new ChromeDriver(chromeOptions);
                 break;
         }
         setWebDriver(driver);
@@ -144,9 +150,9 @@ public class Browser implements WebDriver {
             case BrowserType.IEXPLORE:
                 return DesiredCapabilities.internetExplorer();
             case BrowserType.HTMLUNIT:
-                return DesiredCapabilities.htmlUnit();
+            case BrowserType.PHANTOMJS:
             default:
-                return DesiredCapabilities.phantomjs();
+                return DesiredCapabilities.chrome();
         }
     }
 
