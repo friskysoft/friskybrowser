@@ -183,6 +183,16 @@ public class Element {
         return this;
     }
 
+    public Element waitToBeInvisible() {
+        return waitToBeInvisible(Browser.DEFAULT_EXPLICIT_WAIT);
+    }
+
+    public Element waitToBeInvisible(int timeOutInSeconds) {
+        LOGGER.info("Waiting for element to disappear: " + this);
+        new WebDriverWait(getDriver(), timeOutInSeconds).until(ExpectedConditions.invisibilityOfElementLocated(wrappedBy));
+        return this;
+    }
+
     public Element type(CharSequence... chars) {
         return sendKeys(chars);
     }

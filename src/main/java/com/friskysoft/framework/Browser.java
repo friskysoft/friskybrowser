@@ -48,8 +48,14 @@ public class Browser implements WebDriver {
         return wrappedThreadLocalDriver.get();
     }
 
-    public static void setWebDriver(WebDriver driver) {
+    public static Browser setWebDriver(WebDriver driver) {
         wrappedThreadLocalDriver.set(driver);
+        return singletonBrowser;
+    }
+
+    public static Browser setup(WebDriver driver) {
+        setWebDriver(driver);
+        return singletonBrowser;
     }
 
     /**
@@ -279,8 +285,12 @@ public class Browser implements WebDriver {
     }
 
     public Browser resize(int width, int height) {
-        getWebDriver().manage().window().setPosition(new Point(0,0));
-        getWebDriver().manage().window().setSize(new Dimension(width, height));
+        try {
+            getWebDriver().manage().window().setPosition(new Point(0, 0));
+            getWebDriver().manage().window().setSize(new Dimension(width, height));
+        } catch (Exception ex) {
+            LOGGER.warn(String.format("Resize failed with error <%s>", ex.getMessage()));
+        }
         return this;
     }
 

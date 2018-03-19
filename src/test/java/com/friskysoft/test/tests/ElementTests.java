@@ -121,4 +121,13 @@ public class ElementTests extends BaseTests {
         Assert.assertEquals(homePage.categoryDropdown.getValue(), value);
         Assert.assertEquals(homePage.categoryDropdown.getSelectedOption().getText(), text);
     }
+
+    @Test
+    public void waitForElementToBeInvisible() {
+        loginPage.login();
+        homePage.searchBox.sendKeys("foo");
+        homePage.searchButton.click();
+        homePage.spinner.waitToBeVisible(5).waitToBeInvisible(10);
+        homePage.searchResult.waitToBeVisible();
+    }
 }

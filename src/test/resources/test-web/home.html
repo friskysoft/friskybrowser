@@ -2,7 +2,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="style.css">
-    <script src="script.js"></script>
+    <script src="script.js?v=2"></script>
 </head>
 <body>
 <div class="content">
@@ -23,9 +23,11 @@
         </div>
     </form>
     <div id="search-button">
-        <button onclick="search()">Search</button>
+        <button class="primary search-submit" onclick="search()">Search</button>
     </div>
     <div id="flash-message" style="display: none"></div>
+    <div id="spinner" style="visibility: hidden">Loading...</div>
+    <div id="search-result" style="visibility: hidden"></div>
 </div>
 </body>
 </html>

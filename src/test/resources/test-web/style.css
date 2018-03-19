@@ -31,3 +31,11 @@ button {
     color: #ff0000;
     font-size: 80%;
 }
+
+#search-result {
+    margin-top: 1rem;
+}
+
+#spinner {
+    margin-top: 1rem;
+}
