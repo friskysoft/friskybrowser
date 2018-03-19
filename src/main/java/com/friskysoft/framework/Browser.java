@@ -99,7 +99,7 @@ public class Browser implements WebDriver {
             default:
                 ChromeDriverManager.getInstance().setup();
                 ChromeOptions chromeOptions = new ChromeOptions();
-                chromeOptions.addArguments("--headless");
+                chromeOptions.addArguments("--headless", "--disable-gpu");
                 driver = new ChromeDriver(chromeOptions);
                 break;
         }
