@@ -275,7 +275,7 @@ public class Element {
 
     public boolean isDisplayed() {
         try {
-            Wait wait = new WebDriverWait(getDriver(), 2);
+            Wait<WebDriver> wait = new WebDriverWait(getDriver(), 2);
             wait.until(ExpectedConditions.visibilityOf(getWebElement()));
             return true;
         } catch (Throwable tr) {
