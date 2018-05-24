@@ -7,7 +7,7 @@ apply plugin: 'idea'
 
 project.ext {
     javaVersion = '1.8'
-    project.version = '1.0.3-SNAPSHOT'
+    project.version = '1.0.4'
 }
 
 sourceCompatibility = javaVersion
@@ -81,34 +81,22 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 }
 
 artifacts {
-    // archives jar (default)
-    archives sourcesJar
-    archives javadocJar
-    archives file("${jar.outputs.files[0]}.asc")
-    archives file("${sourcesJar.outputs.files[0]}.asc")
-    archives file("${javadocJar.outputs.files[0]}.asc")
+    archives sourcesJar, javadocJar
 }
 
-task signJars(type: Sign, dependsOn: [jar, sourcesJar, javadocJar]) {
+signing {
     sign configurations.archives
 }
 
 uploadArchives {
 
-    dependsOn signJars
+    dependsOn signArchives
 
     def repoUsername = ""
     def repoPassword = ""
     def snapshotRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
     def stagingRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
     def scmUrl = 'https://github.com/friskysoft/friskybrowser'
-    def repoUrl
-
-    if (project.version.contains('SNAPSHOT')) {
-        repoUrl = snapshotRepoUrl
-    } else {
-        repoUrl = stagingRepoUrl
-    }
 
     if (project.hasProperty('ossrhUsername')) {
         repoUsername = ossrhUsername
@@ -119,7 +107,9 @@ uploadArchives {
     }
 
     doFirst {
-        println("Uploading artifacts to maven repo: " + repoUrl)
+        println("Uploading artifacts to maven:")
+        println("* snapshot repo: " + snapshotRepoUrl)
+        println("* release repo: " + stagingRepoUrl)
         println("* username: " + repoUsername)
         println("* password: " + repoPassword.replaceAll('.', '*'))
         println("* artifacts:")
@@ -132,7 +122,11 @@ uploadArchives {
         mavenDeployer {
             beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-            repository(url: repoUrl) {
+            repository(url: stagingRepoUrl) {
+                authentication(userName: repoUsername, password: repoPassword)
+            }
+
+            snapshotRepository(url: snapshotRepoUrl) {
                 authentication(userName: repoUsername, password: repoPassword)
             }
 
