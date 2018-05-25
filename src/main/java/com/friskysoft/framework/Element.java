@@ -26,7 +26,7 @@ public class Element {
 
     private static void logInit(String initUsing) {
         try {
-            String declaringClassInfo = Utilities.getDeclaringClassInfo();
+            String declaringClassInfo = Utilities.getDeclaringClassInfo(Element.class);
             String elementInfo = "Setting up element using: " + initUsing;
             if (declaringClassInfo != null && !declaringClassInfo.trim().isEmpty()) {
                 LOGGER.debug(declaringClassInfo + " - " + elementInfo);
@@ -39,7 +39,6 @@ public class Element {
     }
 
     public Element(By by) {
-        logInit(by.toString());
         setBy(by);
     }
 
@@ -121,6 +120,7 @@ public class Element {
     }
 
     public Element setBy(By wrappedBy) {
+        logInit(wrappedBy.toString());
         this.wrappedBy = wrappedBy;
         return this;
     }

@@ -40,19 +40,27 @@ public class LoginPage {
 LoginPage loginPage = new LoginPage();
 ```
 #### Simpler and chainable actions for an element
-Reduce the line of codes by chaining actions on the same element.
-```java
-loginPage.username.waitToBeVisible().clear().sendKeys("rafaat");
-loginPage.password.waitToBeVisible().clear().sendKeys("pa$$word").submit();
-loginPage.login.waitToBeClickable().click();
-```
-```java
-String errorMessage = loginPage.message.waitToBeVisible(5).getText();
-```
-```java
-homePage.menu.waitToBeVisible().hover();
-homePage.lastTodoItem.scrollIntoView().dragTo(homePage.topRow);
-```
+- Reduce the line of codes by chaining actions on the same element
+    ```java
+    loginPage.username.waitToBeVisible().clear().sendKeys("rafaat");
+    loginPage.password.waitToBeVisible().clear().sendKeys("pa$$word").submit();
+    loginPage.login.waitToBeClickable().click();
+    String errorMessage = loginPage.message.waitToBeVisible(5).getText();
+    ```
+- Hover and Drag-Drop
+    ```java
+    homePage.menu.waitToBeVisible().hover();`
+    homePage.lastTodoItem.scrollIntoView().dragTo(homePage.topRow);`
+    ```
+
+- Dropdown Select
+    ```java
+    homePage.dropdown.selectByValue(value);
+    homePage.dropdown.selectByText(text);
+    homePage.dropdown.selectByIndex(index);
+    ```
+
+And many more...
 
 #### Use existing webdriver
 If you are already using webdriver, it is very easy to hook it up with Frisky-Browser.

@@ -28,19 +28,21 @@ public class Utilities {
             "    } "+
             "})(arguments[0], arguments[arguments.length - 1]); ";
 
-    public static String getDeclaringClassInfo() {
+    public static String getDeclaringClassInfo(Class invokedClass) {
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        if (stack.length > 3) {
+        for (int i=2; i<10; i++) {
 
             // StackTraceElement[] stack:
             //   0 = java.lang.Thread.getStackTrace
             //   1 = com.friskysoft.framework.Utilities.getDeclaringClassInfo
-            //   2 = com.friskysoft.framework.Element.<init>
-            //   3 = DeclaringClass
+            //   2 = invokedClass
+            //   3-9 = check for declaringClass
 
-            String className = stack[3].getClassName();
-            int lineNumber = stack[3].getLineNumber();
-            return className + ":" + lineNumber;
+            if (stack[i] != null && !stack[i].getClassName().equals(invokedClass.getName())) {
+                String className = stack[i].getClassName();
+                int lineNumber = stack[i].getLineNumber();
+                return className + ":" + lineNumber;
+            }
         }
         return null;
     }
