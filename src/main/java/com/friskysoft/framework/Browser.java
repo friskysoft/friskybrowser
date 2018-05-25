@@ -2,22 +2,27 @@ package com.friskysoft.framework;
 
 import io.github.bonigarcia.wdm.*;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.ie.InternetExplorerOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.opera.OperaDriver;
+import org.openqa.selenium.opera.OperaOptions;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.safari.SafariOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +47,7 @@ public class Browser implements WebDriver {
     public static final String CHROMEDRIVER_SYSTEM_PROPERTY = "webdriver.chrome.driver";
     public static final String GECKODRIVER_SYSTEM_PROPERTY = "webdriver.gecko.driver";
 
-    private static final Log LOGGER = LogFactory.getLog(Browser.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Browser.class);
 
     public static WebDriver getWebDriver() {
         return wrappedThreadLocalDriver.get();
@@ -73,7 +78,7 @@ public class Browser implements WebDriver {
     @SuppressWarnings("deprecation")
     public static Browser newInstance(String browserType) {
         WebDriver driver;
-        DesiredCapabilities capabilities = getDefaultBrowserCapabilities(browserType);
+        Capabilities capabilities = getDefaultBrowserCapabilities(browserType);
         switch (browserType) {
             case BrowserType.CHROME:
                 ChromeDriverManager.getInstance().setup();
@@ -141,24 +146,32 @@ public class Browser implements WebDriver {
     }
 
     @SuppressWarnings("deprecation")
-    public static DesiredCapabilities getDefaultBrowserCapabilities(String browserType) {
+    public static Capabilities getDefaultBrowserCapabilities(String browserType) {
         switch (browserType) {
             case BrowserType.CHROME:
-                return DesiredCapabilities.chrome();
+                return new ChromeOptions();
             case BrowserType.FIREFOX:
-                return DesiredCapabilities.firefox();
+                return new FirefoxOptions();
             case BrowserType.SAFARI:
-                return DesiredCapabilities.safari();
+                return new SafariOptions();
             case BrowserType.OPERA:
             case BrowserType.OPERA_BLINK:
-                return DesiredCapabilities.operaBlink();
+                return new OperaOptions();
             case BrowserType.IE:
             case BrowserType.IEXPLORE:
-                return DesiredCapabilities.internetExplorer();
+                return new InternetExplorerOptions();
+            case BrowserType.EDGE:
+                return new EdgeOptions();
+            case BrowserType.ANDROID:
+                return DesiredCapabilities.android();
+            case BrowserType.IPHONE:
+                return DesiredCapabilities.iphone();
+            case BrowserType.IPAD:
+                return DesiredCapabilities.ipad();
             case BrowserType.HTMLUNIT:
             case BrowserType.PHANTOMJS:
             default:
-                return DesiredCapabilities.chrome();
+                return new ChromeOptions();
         }
     }
 

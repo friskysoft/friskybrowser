@@ -31,10 +31,10 @@ repositories {
 dependencies {
     compile 'org.seleniumhq.selenium:selenium-java:[3.12,4.0['
     compile 'io.github.bonigarcia:webdrivermanager:[2.2.1,3.0['
-    compile 'commons-io:commons-io:[2.6,3.0['
+    compile 'org.slf4j:slf4j-api:[1.0,1.8)'
     testCompile 'org.testng:testng:[6.14,)'
-    testCompile 'org.slf4j:slf4j-simple:[1.8,)'
-    testCompile 'log4j:log4j:[1.2,)'
+    testCompile 'ch.qos.logback:logback-core:[1.0,2.0)'
+    testCompile 'ch.qos.logback:logback-classic:[1.0,2.0)'
 }
 
 clean {

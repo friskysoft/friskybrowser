@@ -27,4 +27,21 @@ public class Utilities {
             "        callback(); "+
             "    } "+
             "})(arguments[0], arguments[arguments.length - 1]); ";
+
+    public static String getDeclaringClassInfo() {
+        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+        if (stack.length > 3) {
+
+            // StackTraceElement[] stack:
+            //   0 = java.lang.Thread.getStackTrace
+            //   1 = com.friskysoft.framework.Utilities.getDeclaringClassInfo
+            //   2 = com.friskysoft.framework.Element.<init>
+            //   3 = DeclaringClass
+
+            String className = stack[3].getClassName();
+            int lineNumber = stack[3].getLineNumber();
+            return className + ":" + lineNumber;
+        }
+        return null;
+    }
 }

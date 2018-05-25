@@ -1,13 +1,13 @@
 package com.friskysoft.framework;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -15,19 +15,36 @@ import java.util.List;
 public class Element {
 
     private By wrappedBy;
+
     private WebElement wrappedElement;
 
-    private static final Log LOGGER = LogFactory.getLog(Element.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Element.class);
 
     enum LocatorType {
         ID, XPATH, CSS, CLASS_NAME, TAG, NAME, LINK_TEXT, PARTIAL_LINK_TEXT
     }
 
+    private static void logInit(String initUsing) {
+        try {
+            String declaringClassInfo = Utilities.getDeclaringClassInfo();
+            String elementInfo = "Setting up element using: " + initUsing;
+            if (declaringClassInfo != null && !declaringClassInfo.trim().isEmpty()) {
+                LOGGER.debug(declaringClassInfo + " - " + elementInfo);
+            } else {
+                LOGGER.debug(elementInfo);
+            }
+        } catch (Exception ex) {
+            LOGGER.warn("Error while trying to log Element.<init>", ex);
+        }
+    }
+
     public Element(By by) {
+        logInit(by.toString());
         setBy(by);
     }
 
     public Element(WebElement element) {
+        logInit(element.toString());
         wrappedElement = element;
     }
 
@@ -36,6 +53,7 @@ public class Element {
         if (locator == null || locator.isEmpty()) {
             throw new IllegalArgumentException("Locator cannot be null or empty");
         }
+        locator = locator.trim();
         if (locator.startsWith(".") || locator.startsWith("#")) {
             locatorType = LocatorType.CSS;
         } else if (locator.startsWith("/")) {
@@ -65,8 +83,6 @@ public class Element {
             locatorType = LocatorType.TAG;
             locator = locator.replaceFirst("tag=", "");
         } else if (locator.contains("text()")) {
-            locatorType = LocatorType.XPATH;
-        } else if (locator.contains("/")) {
             locatorType = LocatorType.XPATH;
         } else {
             locatorType = LocatorType.CSS;
