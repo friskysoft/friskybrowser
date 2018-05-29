@@ -16,10 +16,13 @@ public class LoginPage {
 
     public Element usernameXpath = new Element("//*[@id='username']");
     public Element passwordXpath = new Element("//input[@name='password']");
-    public Element submitXpath = new Element("//*[@id='submit-button']//button");
+    public Element submitXpath = Element.findUsingXpath("//*[@id='submit-button']//button");
 
     public Element usernameId = new Element(By.id("username"));
     public Element passwordId = new Element("id=password");
+
+    public Element usernameName = Element.findUsingName("username");
+    public Element passwordName = Element.findUsing("name=password");
 
     public Element flashMessage = new Element("#flash-message");
 

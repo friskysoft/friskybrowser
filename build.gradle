@@ -7,7 +7,7 @@ apply plugin: 'idea'
 
 project.ext {
     javaVersion = '1.8'
-    project.version = '1.0.4'
+    project.version = '1.0.5'
 }
 
 sourceCompatibility = javaVersion

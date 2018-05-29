@@ -4,11 +4,11 @@ import com.friskysoft.framework.Element;
 
 public class HomePage {
 
-    public Element categoryDropdown = new Element("#category");
-    public Element searchBox = new Element("#search");
-    public Element searchButton = new Element("button.primary.search-submit");
-    public Element flashMessage = new Element("#flash-message");
-    public Element spinner = new Element("#spinner");
-    public Element searchResult = new Element("#search-result");
+    public Element categoryDropdown = Element.findUsing("#category");
+    public Element searchBox = Element.findUsingId("search");
+    public Element searchButton = Element.findUsingCss("button.primary.search-submit");
+    public Element flashMessage = Element.findUsingId("flash-message");
+    public Element spinner = Element.findUsingId("spinner");
+    public Element searchResult = Element.findUsingId("search-result");
 
 }

@@ -1,6 +1,7 @@
 package com.friskysoft.test.framework;
 
 import com.friskysoft.framework.Browser;
+import com.friskysoft.test.pages.FramesPage;
 import com.friskysoft.test.pages.HomePage;
 import com.friskysoft.test.pages.LoginPage;
 import com.friskysoft.test.utils.ImageUploader;
@@ -26,9 +27,11 @@ public class BaseTests {
     protected String baseUrl = null;
     protected String loginPath = "/login.html";
     protected String homePath = "/home.html";
+    protected String framesPath = "/frames.html";
 
     protected HomePage homePage = new HomePage();
     protected LoginPage loginPage = new LoginPage();
+    protected FramesPage framesPage = new FramesPage();
 
     protected Logger getLogger() {
         return Logger.getLogger(this.getClass());

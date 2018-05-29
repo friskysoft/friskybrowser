@@ -18,6 +18,8 @@ public class Element {
 
     private WebElement wrappedElement;
 
+    private Element parentFrame = null;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Element.class);
 
     enum LocatorType {
@@ -36,6 +38,30 @@ public class Element {
         } catch (Exception ex) {
             LOGGER.warn("Error while trying to log Element.<init>", ex);
         }
+    }
+
+    public static Element findUsing(String locator) {
+        return new Element(locator);
+    }
+
+    public static Element findUsingId(String id) {
+        return new Element(By.id(id));
+    }
+
+    public static Element findUsingCss(String css) {
+        return new Element(By.cssSelector(css));
+    }
+
+    public static Element findUsingXpath(String xpath) {
+        return new Element(By.xpath(xpath));
+    }
+
+    public static Element findUsingName(String name) {
+        return new Element(By.name(name));
+    }
+
+    public static Element findUsingLinkText(String linkText) {
+        return new Element(By.linkText(linkText));
     }
 
     public Element(By by) {
@@ -389,4 +415,19 @@ public class Element {
         return this;
     }
 
+    public Element setParentFrame(Element parentFrame) {
+        this.parentFrame = parentFrame;
+        return this;
+    }
+
+    public Element switchTo() {
+        if (parentFrame != null) {
+            parentFrame.switchTo();
+        } else {
+            getDriver().switchTo().defaultContent();
+        }
+        LOGGER.info("Switching to frame: " + this);
+        getDriver().switchTo().frame(getWebElement());
+        return this;
+    }
 }

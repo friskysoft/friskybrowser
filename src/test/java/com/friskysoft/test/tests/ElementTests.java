@@ -39,6 +39,14 @@ public class ElementTests extends BaseTests {
     }
 
     @Test
+    public void loginUsingName() {
+        loginPage.usernameName.type(TestConstants.TEST_USERNAME);
+        loginPage.passwordName.type(TestConstants.TEST_PASSWORD);
+        loginPage.submitCss.click();
+        Assert.assertEquals(browser.getCurrentUrl(), baseUrl + homePath);
+    }
+
+    @Test
     public void inputBoxTest() {
         String value;
         loginPage.username.clear();

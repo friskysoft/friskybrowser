@@ -426,4 +426,18 @@ public class Browser implements WebDriver {
         return this;
     }
 
+    public Browser switchToDefaultContent() {
+        getWebDriver().switchTo().defaultContent();
+        return this;
+    }
+
+    public Browser switchToFrame(Element iframeElement) {
+        getWebDriver().switchTo().frame(iframeElement.getWebElement());
+        return this;
+    }
+
+    public Browser switchToParent() {
+        getWebDriver().switchTo().parentFrame();
+        return this;
+    }
 }
