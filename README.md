@@ -9,7 +9,7 @@
 
 - Gradle:
 
-        compile 'com.friskysoft:friskybrowser:1.0.4'
+        compile 'com.friskysoft:friskybrowser:1.0.5'
 
 - Maven:
 
@@ -30,9 +30,16 @@ The library is intelligent enough to understand the type of selector you are usi
 public class LoginPage {
 
     public Element username = new Element("input.username");
+                              // OR Element.findUsing("input.username");
     public Element password = new Element("//input[name='password']");
+                              // OR Element.findUsing("//input[name='password']");
+                              // OR Element.findUsingXpath("//input[name='password']");
+                              // OR Element.findUsingName("password");
     public Element login = new Element("id=login_button");
+                              // OR Element.findUsingId("login_button");
     public Element message = new Element(By.id("error_message"));
+                              // OR Element.findUsing("#error_message");
+                              // OR Element.findUsingId("error_message");
 
 }
 ```
