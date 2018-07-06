@@ -2,6 +2,8 @@ package com.friskysoft.test.tests;
 
 import com.friskysoft.test.framework.BaseTests;
 import com.friskysoft.test.utils.TestConstants;
+import org.assertj.core.api.Assertions;
+import org.openqa.selenium.UnhandledAlertException;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -68,4 +70,23 @@ public class BrowserTests extends BaseTests {
         browser.close();
     }
 
+    @Test
+    public void alertHandling() {
+
+        browser.executeScript("alert('Handle me!')");
+
+        Assertions.assertThatThrownBy(() -> loginPage.username.sendKeys("foo")).isInstanceOf(UnhandledAlertException.class);
+        Assertions.assertThat(browser.getAlertText()).isEqualTo("Handle me!");
+
+        browser.dismissAlert();
+        loginPage.username.sendKeys("foo");
+        browser.closeAlertIfExists();
+        loginPage.username.sendKeys("foo");
+
+        browser.executeScript("alert('Handle me!')");
+        Assertions.assertThatThrownBy(() -> loginPage.username.sendKeys("foo")).isInstanceOf(UnhandledAlertException.class);
+
+        browser.closeAlertIfExists();
+        loginPage.username.sendKeys("foo");
+    }
 }

@@ -50,7 +50,11 @@ public class Browser implements WebDriver {
     private static final Logger LOGGER = LoggerFactory.getLogger(Browser.class);
 
     public static WebDriver getWebDriver() {
-        return wrappedThreadLocalDriver.get();
+        WebDriver driver = wrappedThreadLocalDriver.get();
+        if (driver == null) {
+            LOGGER.warn("ThreadLocal driver is null, did you forget to initialize Browser?");
+        }
+        return driver;
     }
 
     public static Browser setWebDriver(WebDriver driver) {
@@ -218,6 +222,21 @@ public class Browser implements WebDriver {
             is64bit = (System.getProperty("os.arch").contains("64"));
         }
         return is64bit ? ArchType.X64 : ArchType.X86;
+    }
+
+    public void refresh() {
+        LOGGER.info("Refreshing page with url: " + getCurrentUrl());
+        getWebDriver().navigate().refresh();
+    }
+
+    public void back() {
+        LOGGER.info("Navigating back");
+        getWebDriver().navigate().back();
+    }
+
+    public void forward() {
+        LOGGER.info("Navigating forward");
+        getWebDriver().navigate().forward();
     }
 
     @Override
@@ -457,5 +476,41 @@ public class Browser implements WebDriver {
     public Browser switchToParent() {
         getWebDriver().switchTo().parentFrame();
         return this;
+    }
+
+    public Browser closeAlertIfExists() {
+        try {
+            dismissAlert();
+        } catch (Exception ex) {
+            //ignore
+        }
+        return this;
+    }
+
+    public Browser dismissAlert() {
+        alert().dismiss();
+        return this;
+    }
+
+    public Browser acceptAlert() {
+        alert().accept();
+        return this;
+    }
+
+    public Browser acceptAlertIfExists() {
+        try {
+            alert().accept();
+        } catch (Exception ex) {
+            //ignore
+        }
+        return this;
+    }
+
+    public String getAlertText() {
+        return alert().getText();
+    }
+
+    public Alert alert() {
+        return getWebDriver().switchTo().alert();
     }
 }
