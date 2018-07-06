@@ -68,6 +68,10 @@ public class Browser implements WebDriver {
      */
     private Browser() {}
 
+    public static Browser getInstance() {
+        return singletonBrowser;
+    }
+
     private static Browser newInstance() {
         if (singletonBrowser == null) {
             singletonBrowser = new Browser();

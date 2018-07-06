@@ -195,6 +195,12 @@ public class Element {
         return this;
     }
 
+    public Element rightClick() {
+        LOGGER.info("Element right-click: " + this);
+        Browser.getInstance().getActions().contextClick(this.getWebElement()).build().perform();
+        return this;
+    }
+
     public Element waitToBeVisible() {
         return waitToBeVisible(Browser.DEFAULT_EXPLICIT_WAIT);
     }

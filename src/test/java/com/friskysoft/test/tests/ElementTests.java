@@ -138,4 +138,9 @@ public class ElementTests extends BaseTests {
         homePage.spinner.waitToBeVisible(5).waitToBeInvisible(10);
         homePage.searchResult.waitToBeVisible();
     }
+
+    @Test
+    public void elementActions() {
+        loginPage.submit.rightClick();
+    }
 }
