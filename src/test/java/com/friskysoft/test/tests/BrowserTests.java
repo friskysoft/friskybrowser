@@ -80,13 +80,16 @@ public class BrowserTests extends BaseTests {
 
         browser.dismissAlert();
         loginPage.username.sendKeys("foo");
-        browser.closeAlertIfExists();
+        browser.dismissAlertIfExists();
         loginPage.username.sendKeys("foo");
 
         browser.executeScript("alert('Handle me!')");
         Assertions.assertThatThrownBy(() -> loginPage.username.sendKeys("foo")).isInstanceOf(UnhandledAlertException.class);
 
-        browser.closeAlertIfExists();
+        browser.dismissAlertIfExists();
+        loginPage.username.sendKeys("foo");
+
+        browser.switchToTopWindow();
         loginPage.username.sendKeys("foo");
     }
 }

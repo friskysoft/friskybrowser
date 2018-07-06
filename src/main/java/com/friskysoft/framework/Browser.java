@@ -478,7 +478,7 @@ public class Browser implements WebDriver {
         return this;
     }
 
-    public Browser closeAlertIfExists() {
+    public Browser dismissAlertIfExists() {
         try {
             dismissAlert();
         } catch (Exception ex) {
@@ -512,5 +512,12 @@ public class Browser implements WebDriver {
 
     public Alert alert() {
         return getWebDriver().switchTo().alert();
+    }
+
+    public Browser switchToTopWindow() {
+        for (String name : getWebDriver().getWindowHandles()) {
+            getWebDriver().switchTo().window(name);
+        }
+        return this;
     }
 }
