@@ -366,22 +366,20 @@ public class Browser implements WebDriver {
         return this;
     }
 
-    public Browser sleep(long milliseconds) {
+    public static void sleep(long milliseconds) {
         try {
             Thread.sleep(milliseconds);
         } catch (InterruptedException ex) {
             // ignore
         }
-        return this;
     }
 
-    public Browser wait(int time, TimeUnit unit) {
+    public static void sleep(int time, TimeUnit unit) {
         try {
             Thread.sleep(unit.toMillis(time));
         } catch (InterruptedException ex) {
             // ignore
         }
-        return this;
     }
 
     public Browser setDefaultScreenshotDir(String defaultScreenshotDir) {

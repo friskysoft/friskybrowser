@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public class Element {
 
@@ -191,13 +192,13 @@ public class Element {
 
     public Element click() {
         LOGGER.info("Element click: " + this);
-        getWebElement().click();
+        run(() -> getWebElement().click());
         return this;
     }
 
     public Element rightClick() {
         LOGGER.info("Element right-click: " + this);
-        Browser.getInstance().getActions().contextClick(this.getWebElement()).build().perform();
+        run(() -> Browser.getInstance().getActions().contextClick(this.getWebElement()).build().perform());
         return this;
     }
 
@@ -207,7 +208,7 @@ public class Element {
 
     public Element waitToBeVisible(int timeOutInSeconds) {
         LOGGER.info("Waiting for element to be visible: " + this);
-        new WebDriverWait(getDriver(), timeOutInSeconds).until(ExpectedConditions.visibilityOfElementLocated(wrappedBy));
+        run(() -> new WebDriverWait(getDriver(), timeOutInSeconds).until(ExpectedConditions.visibilityOfElementLocated(wrappedBy)));
         return this;
     }
 
@@ -217,7 +218,7 @@ public class Element {
 
     public Element waitToBePresent(int timeOutInSeconds) {
         LOGGER.info("Waiting for element to be present: " + this);
-        new WebDriverWait(getDriver(), timeOutInSeconds).until(ExpectedConditions.presenceOfElementLocated(wrappedBy));
+        run(() -> new WebDriverWait(getDriver(), timeOutInSeconds).until(ExpectedConditions.presenceOfElementLocated(wrappedBy)));
         return this;
     }
 
@@ -247,19 +248,19 @@ public class Element {
 
     public Element sendKeys(CharSequence... chars) {
         LOGGER.info("Element sendKeys: " + this);
-        getWebElement().sendKeys(chars);
+        run(() -> getWebElement().sendKeys(chars));
         return this;
     }
 
     public Element submit() {
         LOGGER.info("Element submit: " + this);
-        getWebElement().submit();
+        run(() -> getWebElement().submit());
         return this;
     }
 
     public Element clear() {
         LOGGER.info("Element text clear: " + this);
-        getWebElement().clear();
+        run(() -> getWebElement().clear());
         return this;
     }
 
@@ -289,6 +290,10 @@ public class Element {
         return getWebElement().getAttribute(name);
     }
 
+    public String getSrc() {
+        return getAttribute("src");
+    }
+
     public String getLink() {
         return getAttribute("href");
     }
@@ -308,12 +313,12 @@ public class Element {
 
     public String getText() {
         LOGGER.info("Element getText: " + this);
-        return getWebElement().getText();
+        return call(() -> getWebElement().getText()).toString();
     }
 
     public String getValue() {
         LOGGER.info("Element getValue: " + this);
-        return getWebElement().getAttribute("value");
+        return call(() -> getWebElement().getAttribute("value")).toString();
     }
 
     public Element getSelectedOption() {
@@ -357,11 +362,24 @@ public class Element {
     }
 
     public Element getFirst() {
+        return getAllIfNotEmpty().get(0);
+    }
+
+    public Element getLast() {
+        List<Element> elements = getAllIfNotEmpty();
+        return elements.get(elements.size() - 1);
+    }
+
+    public Element getNth(int index) {
+        return getAllIfNotEmpty().get(index);
+    }
+
+    private List<Element> getAllIfNotEmpty() {
         List<Element> elements = getAll();
         if (elements == null || elements.isEmpty()) {
             throw new NotFoundException("No elements found for selector: " + wrappedBy);
         }
-        return elements.get(0);
+        return elements;
     }
 
     public List<Element> getAll() {
@@ -421,6 +439,10 @@ public class Element {
         return this;
     }
 
+    public Element getParentFrame() {
+        return parentFrame;
+    }
+
     public Element setParentFrame(Element parentFrame) {
         this.parentFrame = parentFrame;
         return this;
@@ -435,5 +457,40 @@ public class Element {
         LOGGER.info("Switching to frame: " + this);
         getDriver().switchTo().frame(getWebElement());
         return this;
+    }
+
+    private void run(Runnable runnable) {
+        int retryLeft = 3;
+        RuntimeException ex = null;
+        while (retryLeft > 0) {
+            try {
+                retryLeft--;
+                runnable.run();
+                return;
+            } catch (StaleElementReferenceException staleEx) {
+                ex = staleEx;
+                LOGGER.warn("Stale element found, retry left: " + retryLeft + ". Original error: " + staleEx.getMessage());
+                Browser.sleep(100);
+            }
+        }
+        throw ex;
+    }
+
+    private Object call(Callable callable) {
+        int retryLeft = 3;
+        RuntimeException runEx = null;
+        while (retryLeft > 0) {
+            try {
+                retryLeft--;
+                return callable.call();
+            } catch (StaleElementReferenceException staleEx) {
+                runEx = staleEx;
+                LOGGER.warn("Stale element found, retry left: " + retryLeft + ". Original error: " + staleEx.getMessage());
+                Browser.sleep(100);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        throw runEx;
     }
 }
