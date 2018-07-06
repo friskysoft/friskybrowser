@@ -15,7 +15,7 @@ public class LoginPage {
     public Element submitCss = new Element("#submit-button button");
 
     public Element usernameXpath = new Element("//*[@id='username']");
-    public Element passwordXpath = new Element("//input[@name='password']");
+    public Element passwordXpath = new Element("(//input[@name='password'])[1]");
     public Element submitXpath = Element.findUsingXpath("//*[@id='submit-button']//button");
 
     public Element usernameId = new Element(By.id("username"));

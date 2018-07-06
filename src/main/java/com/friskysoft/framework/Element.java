@@ -84,6 +84,8 @@ public class Element {
             locatorType = LocatorType.CSS;
         } else if (locator.startsWith("/")) {
             locatorType = LocatorType.XPATH;
+        } else if (locator.matches("^\\(*/+.*")) {
+            locatorType = LocatorType.XPATH;
         } else if (locator.toLowerCase().startsWith("id=")) {
             locatorType = LocatorType.ID;
             locator = locator.replaceFirst("id=", "");
