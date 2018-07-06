@@ -10,6 +10,7 @@ public class BrowserTests extends BaseTests {
 
     @BeforeMethod
     public void openUrl() {
+        setupBrowser();
         browser.open(baseUrl + loginPath);
     }
 
@@ -52,4 +53,19 @@ public class BrowserTests extends BaseTests {
         String actualMessage = loginPage.flashMessage.waitToBeVisible().getText();
         Assert.assertEquals(actualMessage, "Username and Password cannot be empty");
     }
+
+    @Test
+    public void driverQuit() {
+        browser.quit();
+        browser.quit();
+        browser.quit();
+    }
+
+    @Test
+    public void driverClose() {
+        browser.close();
+        browser.close();
+        browser.close();
+    }
+
 }

@@ -68,7 +68,7 @@ public class Browser implements WebDriver {
      */
     private Browser() {}
 
-    public static Browser newInstance() {
+    private static Browser newInstance() {
         if (singletonBrowser == null) {
             singletonBrowser = new Browser();
         }
@@ -249,12 +249,28 @@ public class Browser implements WebDriver {
 
     @Override
     public void close() {
-        getWebDriver().close();
+        if (getWebDriver() != null) {
+            try {
+                getWebDriver().close();
+            } catch (Exception ex) {
+                LOGGER.warn("close() method threw an exception: " + ex.getMessage());
+            }
+        } else {
+            LOGGER.warn("close() method was invoked on a null webdriver object");
+        }
     }
 
     @Override
     public void quit() {
-        getWebDriver().quit();
+        if (getWebDriver() != null) {
+            try {
+                getWebDriver().quit();
+            } catch (Exception ex) {
+                LOGGER.warn("quit() method threw an exception: " + ex.getMessage());
+            }
+        } else {
+            LOGGER.warn("quit() method was invoked on a null webdriver object");
+        }
     }
 
     @Override
