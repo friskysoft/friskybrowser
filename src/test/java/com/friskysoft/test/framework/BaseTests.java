@@ -3,6 +3,9 @@ package com.friskysoft.test.framework;
 import com.friskysoft.framework.Browser;
 import com.friskysoft.test.pages.*;
 import com.friskysoft.test.utils.ImageUploader;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.PatternLayout;
 import org.openqa.selenium.remote.BrowserType;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
@@ -34,6 +37,7 @@ public class BaseTests {
 
     @BeforeSuite
     public void setupLogger() {
+        org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
         org.apache.log4j.BasicConfigurator.configure();
     }
 
