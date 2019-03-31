@@ -26,6 +26,14 @@ button {
     cursor: pointer;
 }
 
+.button-blocker {
+    background: grey;
+    width: 5rem;
+    height: 5rem;
+    position: fixed;
+    top: 0;
+}
+
 #flash-message {
     margin-top: 1rem;
     color: #ff0000;
@@ -38,4 +46,15 @@ button {
 
 #spinner {
     margin-top: 1rem;
+}
+
+#parent #popup {
+    display: none;
+    padding: 1rem;
+}
+
+#parent:hover #popup {
+    background: red;
+    display: block;
+    padding: 1rem;
 }

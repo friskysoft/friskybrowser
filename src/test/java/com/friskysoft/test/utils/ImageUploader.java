@@ -13,7 +13,7 @@ import java.util.List;
 public class ImageUploader {
 
     private static final String CONNECTION_SCHEME = "https:";
-    private static final String IMAGE_UPLOAD_PROVIDER_URL = CONNECTION_SCHEME + "//imgsafe.org/upload";
+    private static final String IMAGE_UPLOAD_PROVIDER_URL = CONNECTION_SCHEME + "//imgsafe.org/upload-image";
 
     private static final Log LOGGER = LogFactory.getLog(ImageUploader.class);
 
@@ -34,7 +34,7 @@ public class ImageUploader {
 
             // Send binary file.
             writer.append("--" + boundary).append(CRLF);
-            writer.append("Content-Disposition: form-data; name=\"files[]\"; filename=\"" + imageFile.getName() + "\"").append(CRLF);
+            writer.append("Content-Disposition: form-data; name=\"image\"; filename=\"" + imageFile.getName() + "\"").append(CRLF);
             writer.append("Content-Type: " + URLConnection.guessContentTypeFromName(imageFile.getName())).append(CRLF);
             writer.append("Content-Transfer-Encoding: binary").append(CRLF);
             writer.append(CRLF).flush();
@@ -61,8 +61,8 @@ public class ImageUploader {
 
         try {
             Gson gson = new Gson();
-            ImgSafeData uploadedData = gson.fromJson(json, ImgSafeData.class);
-            return CONNECTION_SCHEME + uploadedData.files.get(0).url;
+            ImgSafeFile uploadedData = gson.fromJson(json, ImgSafeFile.class);
+            return CONNECTION_SCHEME + uploadedData.url;
         } catch (Exception ex) {
             String errMsg = "Image upload failed. ";
             if (code != 200) {
@@ -73,10 +73,6 @@ public class ImageUploader {
             LOGGER.error(errMsg);
             throw new RuntimeException(errMsg, ex);
         }
-    }
-
-    public class ImgSafeData {
-        List<ImgSafeFile> files;
     }
 
     public class ImgSafeFile {

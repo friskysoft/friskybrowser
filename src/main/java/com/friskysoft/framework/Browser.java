@@ -41,30 +41,26 @@ public class Browser implements WebDriver {
     private static Browser singletonBrowser;
     private static String defaultScreenshotDir = "./screenshots";
 
-    public static final int DEFAULT_IMPLICIT_WAIT = 5;
+    public static final int DEFAULT_IMPLICIT_WAIT = 10;
     public static final int DEFAULT_EXPLICIT_WAIT = 10;
+    public static final int DEFAULT_PAGELOAD_WAIT = 60;
 
     public static final String CHROMEDRIVER_SYSTEM_PROPERTY = "webdriver.chrome.driver";
     public static final String GECKODRIVER_SYSTEM_PROPERTY = "webdriver.gecko.driver";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Browser.class);
 
-    public static WebDriver getWebDriver() {
+    public static WebDriver driver() {
         WebDriver driver = wrappedThreadLocalDriver.get();
         if (driver == null) {
-            LOGGER.warn("ThreadLocal driver is null, did you forget to initialize Browser?");
+            LOGGER.warn("ThreadLocal driver is null, did you forget to call setWebDriver(driver)?");
         }
         return driver;
     }
 
     public static Browser setWebDriver(WebDriver driver) {
         wrappedThreadLocalDriver.set(driver);
-        return singletonBrowser;
-    }
-
-    public static Browser setup(WebDriver driver) {
-        setWebDriver(driver);
-        return singletonBrowser;
+        return getInstance();
     }
 
     /**
@@ -73,10 +69,6 @@ public class Browser implements WebDriver {
     private Browser() {}
 
     public static Browser getInstance() {
-        return singletonBrowser;
-    }
-
-    private static Browser newInstance() {
         if (singletonBrowser == null) {
             singletonBrowser = new Browser();
         }
@@ -84,16 +76,16 @@ public class Browser implements WebDriver {
     }
 
     @SuppressWarnings("deprecation")
-    public static Browser newInstance(String browserType) {
+    public static Browser newLocalDriver(String browserType) {
         WebDriver driver;
         Capabilities capabilities = getDefaultBrowserCapabilities(browserType);
         switch (browserType) {
             case BrowserType.CHROME:
-                ChromeDriverManager.getInstance().setup();
+                WebDriverManager.chromedriver().setup();
                 driver = new ChromeDriver(capabilities);
                 break;
             case BrowserType.FIREFOX:
-                FirefoxDriverManager.getInstance().setup();
+                WebDriverManager.firefoxdriver().setup();
                 driver = new FirefoxDriver(capabilities);
                 break;
             case BrowserType.SAFARI:
@@ -101,63 +93,49 @@ public class Browser implements WebDriver {
                 break;
             case BrowserType.OPERA:
             case BrowserType.OPERA_BLINK:
-                OperaDriverManager.getInstance().setup();
+                WebDriverManager.operadriver().setup();
                 driver = new OperaDriver(capabilities);
                 break;
             case BrowserType.IE:
             case BrowserType.IEXPLORE:
-                InternetExplorerDriverManager.getInstance().setup();
+                WebDriverManager.iedriver().setup();
                 driver = new InternetExplorerDriver(capabilities);
                 break;
             case BrowserType.EDGE:
-                EdgeDriverManager.getInstance().setup();
+                WebDriverManager.edgedriver().setup();
                 driver = new EdgeDriver(capabilities);
                 break;
             case BrowserType.HTMLUNIT:
             case BrowserType.PHANTOMJS:
             default:
-                ChromeDriverManager.getInstance().setup();
+                WebDriverManager.chromedriver().setup();
                 ChromeOptions chromeOptions = new ChromeOptions();
                 chromeOptions.addArguments("--headless", "--disable-gpu");
                 driver = new ChromeDriver(chromeOptions);
                 break;
         }
-        setWebDriver(driver);
-        return newInstance().fullscreen();
+        driver.manage().timeouts().implicitlyWait(DEFAULT_IMPLICIT_WAIT, TimeUnit.SECONDS);
+        driver.manage().timeouts().pageLoadTimeout(DEFAULT_PAGELOAD_WAIT, TimeUnit.SECONDS);
+        return setWebDriver(driver).fullscreen();
     }
 
-    public static Browser newInstance(WebDriver driver) {
-        setWebDriver(driver);
-        return newInstance();
-    }
-
-    public static Browser newRemoteInstance(String remoteHubUrl, String browserType) {
+    public static Browser newRemoteDriver(String remoteHubUrl, String browserType) {
         URL url; 
         try {
             url = new URL(remoteHubUrl);
+            return newRemoteDriver(url, browserType);
         } catch (MalformedURLException ex) {
             throw new AssertionError("Invalid remote hub url: " + remoteHubUrl);
         }
-        WebDriver remoteDriver = new RemoteWebDriver(url, getDefaultBrowserCapabilities(browserType));
-        setWebDriver(remoteDriver);
-        return newInstance();
     }
 
-    public static Browser newRemoteInstance(URL remoteHubUrl, String browserType) {
+    public static Browser newRemoteDriver(URL remoteHubUrl, String browserType) {
         WebDriver remoteDriver = new RemoteWebDriver(remoteHubUrl, getDefaultBrowserCapabilities(browserType));
-        setWebDriver(remoteDriver);
-        return newInstance();
+        return setWebDriver(remoteDriver);
     }
 
-    private static URL getResource(String name) {
-        return Thread.currentThread().getContextClassLoader().getResource(name);
-    }
-
-    @SuppressWarnings("deprecation")
-    public static Capabilities getDefaultBrowserCapabilities(String browserType) {
+    private static Capabilities getDefaultBrowserCapabilities(String browserType) {
         switch (browserType) {
-            case BrowserType.CHROME:
-                return new ChromeOptions();
             case BrowserType.FIREFOX:
                 return new FirefoxOptions();
             case BrowserType.SAFARI:
@@ -178,6 +156,7 @@ public class Browser implements WebDriver {
                 return DesiredCapabilities.ipad();
             case BrowserType.HTMLUNIT:
             case BrowserType.PHANTOMJS:
+            case BrowserType.CHROME:
             default:
                 return new ChromeOptions();
         }
@@ -226,55 +205,55 @@ public class Browser implements WebDriver {
 
     public void refresh() {
         LOGGER.info("Refreshing page with url: " + getCurrentUrl());
-        getWebDriver().navigate().refresh();
+        driver().navigate().refresh();
     }
 
     public void back() {
         LOGGER.info("Navigating back");
-        getWebDriver().navigate().back();
+        driver().navigate().back();
     }
 
     public void forward() {
         LOGGER.info("Navigating forward");
-        getWebDriver().navigate().forward();
+        driver().navigate().forward();
     }
 
     @Override
     public void get(String url) {
         LOGGER.info("Opening page at url: " + url);
-        getWebDriver().get(url);
+        driver().get(url);
     }
 
     @Override
     public String getCurrentUrl() {
-        return getWebDriver().getCurrentUrl();
+        return driver().getCurrentUrl();
     }
 
     @Override
     public String getTitle() {
-        return getWebDriver().getTitle();
+        return driver().getTitle();
     }
 
     @Override
     public List<WebElement> findElements(By by) {
-        return getWebDriver().findElements(by);
+        return driver().findElements(by);
     }
 
     @Override
     public WebElement findElement(By by) {
-        return getWebDriver().findElement(by);
+        return driver().findElement(by);
     }
 
     @Override
     public String getPageSource() {
-        return getWebDriver().getPageSource();
+        return driver().getPageSource();
     }
 
     @Override
     public void close() {
-        if (getWebDriver() != null) {
+        if (driver() != null) {
             try {
-                getWebDriver().close();
+                driver().close();
             } catch (Exception ex) {
                 LOGGER.warn("close() method threw an exception: " + ex.getMessage());
             }
@@ -285,9 +264,9 @@ public class Browser implements WebDriver {
 
     @Override
     public void quit() {
-        if (getWebDriver() != null) {
+        if (driver() != null) {
             try {
-                getWebDriver().quit();
+                driver().quit();
             } catch (Exception ex) {
                 LOGGER.warn("quit() method threw an exception: " + ex.getMessage());
             }
@@ -298,32 +277,32 @@ public class Browser implements WebDriver {
 
     @Override
     public Set<String> getWindowHandles() {
-        return getWebDriver().getWindowHandles();
+        return driver().getWindowHandles();
     }
 
     @Override
     public String getWindowHandle() {
-        return getWebDriver().getWindowHandle();
+        return driver().getWindowHandle();
     }
 
     @Override
     public TargetLocator switchTo() {
-        return getWebDriver().switchTo();
+        return driver().switchTo();
     }
 
     @Override
     public Navigation navigate() {
-        return getWebDriver().navigate();
+        return driver().navigate();
     }
 
     @Override
     public Options manage() {
-        return getWebDriver().manage();
+        return driver().manage();
     }
 
     public Browser fullscreen() {
         try {
-            getWebDriver().manage().window().fullscreen();
+            driver().manage().window().fullscreen();
         } catch (Exception ex1) {
             try {
                 int w = Integer.parseInt(executeScript("return screen.width").toString());
@@ -338,8 +317,8 @@ public class Browser implements WebDriver {
 
     public Browser resize(int width, int height) {
         try {
-            getWebDriver().manage().window().setPosition(new Point(0, 0));
-            getWebDriver().manage().window().setSize(new Dimension(width, height));
+            driver().manage().window().setPosition(new Point(0, 0));
+            driver().manage().window().setSize(new Dimension(width, height));
         } catch (Exception ex) {
             LOGGER.warn(String.format("Resize failed with error <%s>", ex.getMessage()));
         }
@@ -347,11 +326,11 @@ public class Browser implements WebDriver {
     }
 
     public Actions getActions() {
-        return new Actions(getWebDriver());
+        return new Actions(driver());
     }
 
     public JavascriptExecutor getJavascriptExecutor() {
-        return (JavascriptExecutor)(getWebDriver());
+        return (JavascriptExecutor)(driver());
     }
 
     public Object executeScript(String script, Object... args) {
@@ -363,7 +342,7 @@ public class Browser implements WebDriver {
     }
 
     public Object injectJQuery() {
-        return injectJQuery("3.0.0");
+        return injectJQuery("3.3.1");
     }
 
     public Object injectJQuery(String version) {
@@ -372,10 +351,10 @@ public class Browser implements WebDriver {
 
     public void destroy() {
         try {
-            getWebDriver().close();
+            driver().close();
         } catch (Exception ignore) {}
         try {
-            getWebDriver().quit();
+            driver().quit();
         } catch (Exception ignore) {}
         setWebDriver(null);
     }
@@ -421,7 +400,7 @@ public class Browser implements WebDriver {
 
     public String takeScreenshot(String filepath) {
         try {
-            File scrFile = ((TakesScreenshot) getWebDriver()).getScreenshotAs(OutputType.FILE);
+            File scrFile = ((TakesScreenshot) driver()).getScreenshotAs(OutputType.FILE);
             FileUtils.copyFile(scrFile, new File(filepath));
             return new File(filepath).getAbsolutePath();
         } catch (IOException ioex) {
@@ -431,17 +410,17 @@ public class Browser implements WebDriver {
     }
 
     public Browser setPageLoadTimeout(int time, TimeUnit unit) {
-        getWebDriver().manage().timeouts().pageLoadTimeout(time, unit);
+        driver().manage().timeouts().pageLoadTimeout(time, unit);
         return this;
     }
 
     public Browser setScriptTimeout(int time, TimeUnit unit) {
-        getWebDriver().manage().timeouts().setScriptTimeout(time, unit);
+        driver().manage().timeouts().setScriptTimeout(time, unit);
         return this;
     }
 
     public Browser setImplicitWait(int time, TimeUnit unit) {
-        getWebDriver().manage().timeouts().implicitlyWait(time, unit);
+        driver().manage().timeouts().implicitlyWait(time, unit);
         return this;
     }
 
@@ -450,7 +429,7 @@ public class Browser implements WebDriver {
     }
 
     public Browser waitForElementToBePresent(By by, int timeOutInSeconds) {
-        new WebDriverWait(getWebDriver(), timeOutInSeconds).until(ExpectedConditions.presenceOfElementLocated(by));
+        new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.presenceOfElementLocated(by));
         return this;
     }
 
@@ -459,22 +438,22 @@ public class Browser implements WebDriver {
     }
 
     public Browser waitForElementToBeClickable(By by, int timeOutInSeconds) {
-        new WebDriverWait(getWebDriver(), timeOutInSeconds).until(ExpectedConditions.elementToBeClickable(by));
+        new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.elementToBeClickable(by));
         return this;
     }
 
     public Browser switchToDefaultContent() {
-        getWebDriver().switchTo().defaultContent();
+        driver().switchTo().defaultContent();
         return this;
     }
 
     public Browser switchToFrame(Element iframeElement) {
-        getWebDriver().switchTo().frame(iframeElement.getWebElement());
+        driver().switchTo().frame(iframeElement.getWebElement());
         return this;
     }
 
     public Browser switchToParent() {
-        getWebDriver().switchTo().parentFrame();
+        driver().switchTo().parentFrame();
         return this;
     }
 
@@ -511,12 +490,12 @@ public class Browser implements WebDriver {
     }
 
     public Alert alert() {
-        return getWebDriver().switchTo().alert();
+        return driver().switchTo().alert();
     }
 
     public Browser switchToTopWindow() {
-        for (String name : getWebDriver().getWindowHandles()) {
-            getWebDriver().switchTo().window(name);
+        for (String name : driver().getWindowHandles()) {
+            driver().switchTo().window(name);
         }
         return this;
     }

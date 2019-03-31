@@ -13,6 +13,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import static com.friskysoft.framework.Browser.driver;
+import static com.friskysoft.framework.Browser.sleep;
+
 public class Element {
 
     private By wrappedBy;
@@ -20,6 +23,8 @@ public class Element {
     private WebElement wrappedElement;
 
     private Element parentFrame = null;
+
+    private int waitToBeClickable = 0;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Element.class);
 
@@ -171,14 +176,9 @@ public class Element {
         }
     }
 
-    public WebDriver getDriver() {
-        // returns the thread static webdriver for this thread
-        return Browser.getWebDriver();
-    }
-
     public WebElement getWebElement() {
         if (wrappedElement == null) {
-            return getDriver().findElement(getBy());
+            return driver().findElement(getBy());
         } else {
             return wrappedElement;
         }
@@ -189,12 +189,32 @@ public class Element {
     }
 
     public List<WebElement> getWebElements() {
-        return getDriver().findElements(getBy());
+        return driver().findElements(getBy());
     }
 
     public Element click() {
+        long start = System.currentTimeMillis();
         LOGGER.info("Element click: " + this);
-        run(() -> getWebElement().click());
+        WebDriverException exception;
+        do {
+            try {
+                run(() -> getWebElement().click());
+                exception = null;
+                break;
+            } catch (WebDriverException ex) {
+                if (waitToBeClickable > 0) {
+                    LOGGER.warn("Waiting for element to be clickable. Reason: " + ex.getMessage().split("\n")[0]);
+                    exception = ex;
+                    sleep(500);
+                } else {
+                    throw ex;
+                }
+            }
+        } while (System.currentTimeMillis() - start <= waitToBeClickable * 1000);
+        waitToBeClickable = 0;
+        if (exception != null) {
+            throw exception;
+        }
         return this;
     }
 
@@ -210,7 +230,7 @@ public class Element {
 
     public Element waitToBeVisible(int timeOutInSeconds) {
         LOGGER.info("Waiting for element to be visible: " + this);
-        run(() -> new WebDriverWait(getDriver(), timeOutInSeconds).until(ExpectedConditions.visibilityOfElementLocated(wrappedBy)));
+        run(() -> new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.visibilityOfElementLocated(wrappedBy)));
         return this;
     }
 
@@ -220,7 +240,7 @@ public class Element {
 
     public Element waitToBePresent(int timeOutInSeconds) {
         LOGGER.info("Waiting for element to be present: " + this);
-        run(() -> new WebDriverWait(getDriver(), timeOutInSeconds).until(ExpectedConditions.presenceOfElementLocated(wrappedBy)));
+        run(() -> new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.presenceOfElementLocated(wrappedBy)));
         return this;
     }
 
@@ -229,8 +249,9 @@ public class Element {
     }
 
     public Element waitToBeClickable(int timeOutInSeconds) {
+        waitToBeClickable = timeOutInSeconds;
         LOGGER.info("Waiting for element to be clickable: " + this);
-        new WebDriverWait(getDriver(), timeOutInSeconds).until(ExpectedConditions.elementToBeClickable(wrappedBy));
+        run(() -> new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.elementToBeClickable(wrappedBy)));
         return this;
     }
 
@@ -240,7 +261,7 @@ public class Element {
 
     public Element waitToBeInvisible(int timeOutInSeconds) {
         LOGGER.info("Waiting for element to disappear: " + this);
-        new WebDriverWait(getDriver(), timeOutInSeconds).until(ExpectedConditions.invisibilityOfElementLocated(wrappedBy));
+        run(() -> new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.invisibilityOfElementLocated(wrappedBy)));
         return this;
     }
 
@@ -330,7 +351,7 @@ public class Element {
 
     public boolean isDisplayed() {
         try {
-            Wait<WebDriver> wait = new WebDriverWait(getDriver(), 2);
+            Wait<WebDriver> wait = new WebDriverWait(driver(), 2);
             wait.until(ExpectedConditions.visibilityOf(getWebElement()));
             return true;
         } catch (Throwable tr) {
@@ -392,7 +413,7 @@ public class Element {
     }
 
     private Object executeScript(String script, Object... args) {
-        return ((JavascriptExecutor) getDriver()).executeScript(script, args);
+        return ((JavascriptExecutor) driver()).executeScript(script, args);
     }
 
     private String getJQuerySelector() {
@@ -415,8 +436,17 @@ public class Element {
 
     public Element triggerHover() {
         LOGGER.info("Element javascript hover: " + this);
-        executeScript(getJQuerySelector() + ".trigger('mouseenter')");
+        this.jsMouseEvent("mouseover");
+        this.jsMouseEvent("mouseenter");
         return this;
+    }
+
+    private void jsMouseEvent(String event) {
+        String code = "var fireOnThis = arguments[0];"
+                + "var evObj = document.createEvent('MouseEvents');"
+                + "evObj.initEvent( '" + event + "', true, true );"
+                + "fireOnThis.dispatchEvent(evObj);";
+        this.executeScript(code, getWebElement());
     }
 
     public Element hover() {
@@ -425,7 +455,7 @@ public class Element {
 
     public Element dragTo(Element destination) {
         LOGGER.info("Dragging element: " + this + " to: " + destination);
-        Actions actions = new Actions(getDriver());
+        Actions actions = new Actions(driver());
         actions.dragAndDrop(this.getWebElement(), destination.getWebElement()).perform();
         return this;
     }
@@ -435,7 +465,7 @@ public class Element {
         try {
             executeScript("arguments[0].scrollIntoView(true);", getWebElement());
         } catch (Exception ex) {
-            Actions actions = new Actions(getDriver());
+            Actions actions = new Actions(driver());
             actions.moveToElement(getWebElement()).perform();
         }
         return this;
@@ -454,10 +484,10 @@ public class Element {
         if (parentFrame != null) {
             parentFrame.switchTo();
         } else {
-            getDriver().switchTo().defaultContent();
+            driver().switchTo().defaultContent();
         }
         LOGGER.info("Switching to frame: " + this);
-        getDriver().switchTo().frame(getWebElement());
+        driver().switchTo().frame(getWebElement());
         return this;
     }
 

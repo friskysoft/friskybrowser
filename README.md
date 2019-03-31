@@ -9,14 +9,14 @@
 
 - Gradle:
 
-        compile 'com.friskysoft:friskybrowser:1.0.6'
+        compile 'com.friskysoft:friskybrowser:2.0.0'
 
 - Maven:
 
         <dependency>
-          <groupId>com.friskysoft</groupId>
-          <artifactId>friskybrowser</artifactId>
-          <version>1.0.6</version>
+            <groupId>com.friskysoft</groupId>
+            <artifactId>friskybrowser</artifactId>
+            <version>2.0.0</version>
         </dependency>
 
 ### Requirements
@@ -73,20 +73,20 @@ And many more...
 If you are already using webdriver, it is very easy to hook it up with Frisky-Browser.
 ```java
 WebDriver driver = new ChromeDriver();
-Browser browser = Browser.newInstance(driver);
+Browser browser = Browser.setWebDriver(driver);
 browser.open("https://www.friskysoft.com");
 ```
 ```java
 DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-WebDriver driver = new RemoteWebDriver(capabilities);
-Browser browser = Browser.newInstance(driver);
+WebDriver driver = new RemoteWebDriver(url, capabilities);
+Browser browser = Browser.setWebDriver(driver);
 browser.open("https://www.friskysoft.com");
 ```
 
 #### Easy use of remote webdriver hub
 Just specify the Hub URL and Browser type (and OS type as optional)
 ```java
-Browser browser = Browser.newRemoteInstance("http://localhost:4444/wd/hub", BrowserType.CHROME);
+Browser browser = Browser.newRemoteDriver("http://localhost:4444/wd/hub", BrowserType.CHROME);
 browser.open("https://www.friskysoft.com");
 ```
 
@@ -102,7 +102,7 @@ browser.executeAsyncScript(script);
 @Test
 public void loginTest() {
 
-    Browser browser = Browser.newInstance(BrowserType.CHROME)
+    Browser browser = Browser.newLocalDriver(BrowserType.CHROME)
                              .setPageLoadTimeout(30, TimeUnit.SECONDS)
                              .setImplicitWait(5, TimeUnit.SECONDS);
 

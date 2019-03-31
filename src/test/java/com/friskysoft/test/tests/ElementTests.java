@@ -2,6 +2,9 @@ package com.friskysoft.test.tests;
 
 import com.friskysoft.test.framework.BaseTests;
 import com.friskysoft.test.utils.TestConstants;
+import org.assertj.core.api.Assertions;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriverException;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -131,16 +134,67 @@ public class ElementTests extends BaseTests {
     }
 
     @Test
+    public void waitForElementToBeVisible() {
+        loginPage.login();
+        homePage.searchBox.sendKeys("foo");
+        homePage.searchButton.click();
+        Assertions.assertThatThrownBy(() -> {
+            homePage.searchResult.waitToBeVisible(1);
+        }).isInstanceOf(TimeoutException.class).hasMessageContaining("waiting for visibility of element located by " + homePage.searchResult.getBy());
+
+        homePage.searchResult.waitToBeVisible(10);
+    }
+
+    @Test
     public void waitForElementToBeInvisible() {
         loginPage.login();
         homePage.searchBox.sendKeys("foo");
         homePage.searchButton.click();
         homePage.spinner.waitToBeVisible(5).waitToBeInvisible(10);
+
+        homePage.searchButton.click();
+        Assertions.assertThatThrownBy(() -> {
+            homePage.spinner.waitToBeVisible(5).waitToBeInvisible(1);
+        }).isInstanceOf(TimeoutException.class).hasMessageContaining("waiting for element to no longer be visible: " + homePage.spinner.getBy());
+
         homePage.searchResult.waitToBeVisible();
     }
 
     @Test
+    public void waitForElementToBeClickable() {
+        browser.open(baseUrl + overlapPath);
+        Assertions.assertThatThrownBy(() -> overlapPage.searchButton.click())
+                .isInstanceOf(WebDriverException.class)
+                .hasMessageContaining("is not clickable at point")
+                .hasMessageContaining("Other element would receive the click");
+
+        browser.open(baseUrl + overlapPath);
+        overlapPage.searchButton.waitToBeClickable(6).click();
+
+        browser.open(baseUrl + overlapPath);
+        Assertions.assertThatThrownBy(() -> overlapPage.searchButton.waitToBeClickable(3).click())
+                .isInstanceOf(WebDriverException.class)
+                .hasMessageContaining("is not clickable at point")
+                .hasMessageContaining("Other element would receive the click");
+    }
+
+    @Test
+    public void elementHover() {
+        browser.open(baseUrl + hoverPath);
+
+        Assertions.assertThatThrownBy(() -> hoverPage.popup.waitToBeVisible(2))
+                .isInstanceOf(WebDriverException.class)
+                .hasMessageContaining("waiting for visibility of element");
+
+        hoverPage.parent.hover();
+        hoverPage.popup.waitToBeVisible(2);
+    }
+
+    @Test
     public void elementActions() {
+        browser.injectJQuery();
         loginPage.submit.rightClick();
+        loginPage.submit.hover();
+        loginPage.submit.triggerClick();
     }
 }

@@ -49,5 +49,34 @@ function search() {
 }
 
 setInterval(function() {
-    document.getElementById("spinner").style.visibility = "hidden";
+    var spinner = document.getElementById("spinner");
+    if (spinner) {
+        spinner.style.visibility = "hidden";
+    } else {
+        console.log("spinner not present")
+    }
+    var blocker = document.querySelector(".button-blocker");
+    if (blocker) {
+        blocker.style.visibility = "hidden";
+    } else {
+        console.log("button-blocker not present")
+    }
 }, 5000);
+
+function hover() {
+    var e = document.getElementById('parent');
+    if (e) {
+        e.onmouseover = function () {
+            document.getElementById('popup').style.display = 'block';
+        };
+        e.onmouseout = function () {
+            document.getElementById('popup').style.display = 'none';
+        };
+    } else {
+        console.log("hover element not present")
+    }
+}
+
+window.onload = function() {
+    hover();
+};

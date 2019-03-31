@@ -1,17 +1,8 @@
 package com.friskysoft.test.framework;
 
 import com.friskysoft.framework.Browser;
-import com.friskysoft.test.pages.FramesPage;
-import com.friskysoft.test.pages.HomePage;
-import com.friskysoft.test.pages.LoginPage;
+import com.friskysoft.test.pages.*;
 import com.friskysoft.test.utils.ImageUploader;
-import com.friskysoft.test.utils.TestConstants;
-import io.github.bonigarcia.wdm.ChromeDriverManager;
-import io.github.bonigarcia.wdm.FirefoxDriverManager;
-import io.github.bonigarcia.wdm.PhantomJsDriverManager;
-import org.apache.commons.lang3.StringUtils;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.remote.BrowserType;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
@@ -28,13 +19,22 @@ public class BaseTests {
     protected String loginPath = "/login.html";
     protected String homePath = "/home.html";
     protected String framesPath = "/frames.html";
+    protected String overlapPath = "/overlap.html";
+    protected String hoverPath = "/hover.html";
 
     protected HomePage homePage = new HomePage();
     protected LoginPage loginPage = new LoginPage();
     protected FramesPage framesPage = new FramesPage();
+    protected OverlapPage overlapPage = new OverlapPage();
+    protected HoverPage hoverPage = new HoverPage();
 
     protected Logger getLogger() {
         return Logger.getLogger(this.getClass());
+    }
+
+    @BeforeSuite
+    public void setupLogger() {
+        org.apache.log4j.BasicConfigurator.configure();
     }
 
     @BeforeClass
@@ -45,7 +45,7 @@ public class BaseTests {
 
     @BeforeClass
     public void setupBrowser() {
-        browser = Browser.newInstance(browserType)
+        browser = Browser.newLocalDriver(browserType)
                 .setPageLoadTimeout(30, TimeUnit.SECONDS)
                 .setImplicitWait(5, TimeUnit.SECONDS);
     }
