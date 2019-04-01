@@ -3,16 +3,16 @@ package com.friskysoft.test.framework;
 import com.friskysoft.framework.Browser;
 import com.friskysoft.test.pages.*;
 import com.friskysoft.test.utils.ImageUploader;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.PatternLayout;
 import org.openqa.selenium.remote.BrowserType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
-import org.testng.log4testng.Logger;
 
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Handler;
 
 public class BaseTests {
 
@@ -32,12 +32,16 @@ public class BaseTests {
     protected HoverPage hoverPage = new HoverPage();
 
     protected Logger getLogger() {
-        return Logger.getLogger(this.getClass());
+        return LoggerFactory.getLogger(this.getClass());
     }
 
-    @BeforeSuite
-    public void setupLogger() {
-        org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
+    static {
+        java.util.logging.Logger root = java.util.logging.Logger.getLogger("");
+        root.setLevel(java.util.logging.Level.WARNING);
+        for (Handler handler : root.getHandlers()) {
+            handler.setLevel(java.util.logging.Level.WARNING);
+        }
+        org.apache.log4j.Logger.getRootLogger().setLevel(org.apache.log4j.Level.INFO);
         org.apache.log4j.BasicConfigurator.configure();
     }
 
@@ -47,11 +51,16 @@ public class BaseTests {
         baseUrl = "file://" + resource.getPath();
     }
 
-    @BeforeClass
+    @BeforeMethod
     public void setupBrowser() {
         browser = Browser.newLocalDriver(browserType)
                 .setPageLoadTimeout(30, TimeUnit.SECONDS)
                 .setImplicitWait(5, TimeUnit.SECONDS);
+    }
+
+    @BeforeMethod
+    public void beforeMethod(Method method) {
+        getLogger().info("Running " + method.getDeclaringClass().getName() + "." + method.getName());
     }
 
     @AfterMethod
@@ -67,7 +76,7 @@ public class BaseTests {
         }
     }
 
-    @AfterClass
+    @AfterMethod
     public void teardownBrowser() {
         browser.destroy();
     }

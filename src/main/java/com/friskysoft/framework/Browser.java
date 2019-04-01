@@ -110,7 +110,12 @@ public class Browser implements WebDriver {
             default:
                 WebDriverManager.chromedriver().setup();
                 ChromeOptions chromeOptions = new ChromeOptions();
+                if (capabilities instanceof ChromeOptions) {
+                    chromeOptions = (ChromeOptions) capabilities;
+                }
                 chromeOptions.addArguments("--headless", "--disable-gpu");
+                System.setProperty("webdriver.chrome.args", "--disable-logging");
+                System.setProperty("webdriver.chrome.silentOutput", "true");
                 driver = new ChromeDriver(chromeOptions);
                 break;
         }
@@ -134,6 +139,7 @@ public class Browser implements WebDriver {
         return setWebDriver(remoteDriver);
     }
 
+    @SuppressWarnings("deprecation")
     private static Capabilities getDefaultBrowserCapabilities(String browserType) {
         switch (browserType) {
             case BrowserType.FIREFOX:
