@@ -6,6 +6,8 @@ import org.openqa.selenium.By;
 
 public class LoginPage {
 
+    public Element form = new Element("form.login");
+
     public Element username = new Element("#username");
     public Element password = new Element("#password");
     public Element submit = new Element("#submit-button button");

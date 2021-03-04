@@ -1,21 +1,20 @@
 package com.friskysoft.test.utils;
 
 import com.google.gson.Gson;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.nio.file.Files;
-import java.util.List;
 
 public class ImageUploader {
 
     private static final String CONNECTION_SCHEME = "https:";
     private static final String IMAGE_UPLOAD_PROVIDER_URL = CONNECTION_SCHEME + "//imgsafe.org/upload-image";
 
-    private static final Log LOGGER = LogFactory.getLog(ImageUploader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImageUploader.class);
 
     public static String upload(String filepath) throws IOException {
         String charset = "UTF-8";

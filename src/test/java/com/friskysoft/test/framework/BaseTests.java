@@ -24,6 +24,7 @@ public class BaseTests {
     protected String framesPath = "/frames.html";
     protected String overlapPath = "/overlap.html";
     protected String hoverPath = "/hover.html";
+    protected String largePagePath = "/largePage.html";
 
     protected HomePage homePage = new HomePage();
     protected LoginPage loginPage = new LoginPage();
@@ -41,8 +42,6 @@ public class BaseTests {
         for (Handler handler : root.getHandlers()) {
             handler.setLevel(java.util.logging.Level.WARNING);
         }
-        org.apache.log4j.Logger.getRootLogger().setLevel(org.apache.log4j.Level.INFO);
-        org.apache.log4j.BasicConfigurator.configure();
     }
 
     @BeforeClass
@@ -52,7 +51,7 @@ public class BaseTests {
     }
 
     @BeforeMethod
-    public void setupBrowser() {
+    public void setupBrowser(Method method) {
         browser = Browser.newLocalDriver(browserType)
                 .setPageLoadTimeout(30, TimeUnit.SECONDS)
                 .setImplicitWait(5, TimeUnit.SECONDS);
@@ -81,4 +80,8 @@ public class BaseTests {
         browser.destroy();
     }
 
+    @AfterSuite
+    public void afterSuite() {
+        Browser.closeAllWebdriverInstances();
+    }
 }

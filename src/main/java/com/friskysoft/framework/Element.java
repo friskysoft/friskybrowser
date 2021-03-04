@@ -1,5 +1,8 @@
 package com.friskysoft.framework;
 
+import com.assertthat.selenium_shutterbug.core.Capture;
+import com.assertthat.selenium_shutterbug.core.CaptureElement;
+import com.assertthat.selenium_shutterbug.core.Shutterbug;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -9,6 +12,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -172,7 +176,7 @@ public class Element {
                 return locatorString;
             }
         } else {
-            return null;
+            return "null";
         }
     }
 
@@ -467,6 +471,31 @@ public class Element {
         } catch (Exception ex) {
             Actions actions = new Actions(driver());
             actions.moveToElement(getWebElement()).perform();
+        }
+        return this;
+    }
+
+    public Element takeScreenshot() {
+        return takeScreenshot(false);
+    }
+
+    public Element takeScreenshot(boolean scrolling) {
+        String filename = Browser.getDefaultScreenshotFileName() + "_" + this.toString().replaceAll("[^A-Za-z0-9]", "");
+        return takeScreenshot(Browser.getDefaultScreenshotDir() + "/" + filename, scrolling);
+    }
+
+    public Element takeScreenshot(String filepath) {
+        return takeScreenshot(filepath, false);
+    }
+
+    public Element takeScreenshot(String filepath, boolean scrolling) {
+        try {
+            File file = new File(filepath);
+            Shutterbug.shootElement(driver(), getWebElement(), scrolling ? CaptureElement.FULL_SCROLL : CaptureElement.VIEWPORT)
+                    .withName(file.getName())
+                    .save(file.getParentFile().getAbsolutePath());
+        } catch (Exception ex) {
+            LOGGER.error("Unable to take screenshot of the element: " + this + ". Error:" + ex.getMessage());
         }
         return this;
     }

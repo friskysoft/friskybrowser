@@ -70,6 +70,12 @@ public class ElementTests extends BaseTests {
     }
 
     @Test
+    public void elementScreenshot() {
+        Assert.assertTrue(loginPage.form.isDisplayed());
+        loginPage.form.takeScreenshot();
+    }
+
+    @Test
     public void hiddenElement() {
         Assert.assertFalse(loginPage.flashMessage.isDisplayed());
         loginPage.login("abc", "123");

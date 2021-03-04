@@ -1,5 +1,7 @@
 package com.friskysoft.framework;
 
+import com.assertthat.selenium_shutterbug.core.Capture;
+import com.assertthat.selenium_shutterbug.core.Shutterbug;
 import io.github.bonigarcia.wdm.*;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
@@ -30,16 +32,20 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class Browser implements WebDriver {
 
     private static ThreadLocal<WebDriver> wrappedThreadLocalDriver = new ThreadLocal<>();
+    private static Set<WebDriver> allWebdriverInstances = new HashSet<>();
     private static Browser singletonBrowser;
-    private static String defaultScreenshotDir = "./screenshots";
+    private static String defaultScreenshotDir;
+
+    static {
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss");
+        defaultScreenshotDir = "./screenshots/" + format.format(new Date());
+    }
 
     public static final int DEFAULT_IMPLICIT_WAIT = 10;
     public static final int DEFAULT_EXPLICIT_WAIT = 10;
@@ -60,6 +66,9 @@ public class Browser implements WebDriver {
 
     public static Browser setWebDriver(WebDriver driver) {
         wrappedThreadLocalDriver.set(driver);
+        if (driver != null) {
+            allWebdriverInstances.add(driver);
+        }
         return getInstance();
     }
 
@@ -73,6 +82,10 @@ public class Browser implements WebDriver {
             singletonBrowser = new Browser();
         }
         return singletonBrowser;
+    }
+
+    public static Set<WebDriver> getAllWebdriverInstances() {
+        return allWebdriverInstances;
     }
 
     @SuppressWarnings("deprecation")
@@ -121,11 +134,11 @@ public class Browser implements WebDriver {
         }
         driver.manage().timeouts().implicitlyWait(DEFAULT_IMPLICIT_WAIT, TimeUnit.SECONDS);
         driver.manage().timeouts().pageLoadTimeout(DEFAULT_PAGELOAD_WAIT, TimeUnit.SECONDS);
-        return setWebDriver(driver).fullscreen();
+        return setWebDriver(driver);
     }
 
     public static Browser newRemoteDriver(String remoteHubUrl, String browserType) {
-        URL url; 
+        URL url;
         try {
             url = new URL(remoteHubUrl);
             return newRemoteDriver(url, browserType);
@@ -164,7 +177,10 @@ public class Browser implements WebDriver {
             case BrowserType.PHANTOMJS:
             case BrowserType.CHROME:
             default:
-                return new ChromeOptions();
+                ChromeOptions chromeOptions = new ChromeOptions();
+                chromeOptions.setExperimentalOption("excludeSwitches", Arrays.asList("enable-automation"));
+                chromeOptions.addArguments("--disable-blink-features=AutomationControlled");
+                return chromeOptions;
         }
     }
 
@@ -255,17 +271,25 @@ public class Browser implements WebDriver {
         return driver().getPageSource();
     }
 
-    @Override
-    public void close() {
-        if (driver() != null) {
+    public static void closeAllWebdriverInstances() {
+        allWebdriverInstances.forEach(Browser::close);
+    }
+
+    public static void close(WebDriver driver) {
+        if (driver != null) {
             try {
-                driver().close();
+                driver.close();
             } catch (Exception ex) {
                 LOGGER.warn("close() method threw an exception: " + ex.getMessage());
             }
         } else {
             LOGGER.warn("close() method was invoked on a null webdriver object");
         }
+    }
+
+    @Override
+    public void close() {
+        close(driver());
     }
 
     @Override
@@ -321,12 +345,46 @@ public class Browser implements WebDriver {
         return this;
     }
 
+    public Browser maximize() {
+        try {
+            driver().manage().window().maximize();
+        } catch (Exception ex1) {
+            try {
+                int w = Integer.parseInt(executeScript("return screen.width").toString());
+                int h = Integer.parseInt(executeScript("return screen.height").toString());
+                moveWindow(0, 0);
+                resize(w, h);
+            } catch (Exception ex2) {
+                LOGGER.warn(String.format("Browser maximize failed with errors <%s> and <%s> ", ex1.getMessage(), ex2.getMessage()));
+            }
+        }
+        return this;
+    }
+
     public Browser resize(int width, int height) {
         try {
             driver().manage().window().setPosition(new Point(0, 0));
             driver().manage().window().setSize(new Dimension(width, height));
         } catch (Exception ex) {
-            LOGGER.warn(String.format("Resize failed with error <%s>", ex.getMessage()));
+            LOGGER.warn(String.format("Browser resize failed with error <%s>", ex.getMessage()));
+        }
+        return this;
+    }
+
+    public Browser moveWindow(int x, int y) {
+        try {
+            driver().manage().window().setPosition(new Point(x, y));
+        } catch (Exception ex) {
+            LOGGER.warn(String.format("Browser moveWindow failed with error <%s>", ex.getMessage()));
+        }
+        return this;
+    }
+
+    public Browser minimize() {
+        try {
+            driver().manage().window().setPosition(new Point(0, 10000));
+        } catch (Exception ex) {
+            LOGGER.warn(String.format("Browser resize failed with error <%s>", ex.getMessage()));
         }
         return this;
     }
@@ -336,7 +394,7 @@ public class Browser implements WebDriver {
     }
 
     public JavascriptExecutor getJavascriptExecutor() {
-        return (JavascriptExecutor)(driver());
+        return (JavascriptExecutor) (driver());
     }
 
     public Object executeScript(String script, Object... args) {
@@ -358,10 +416,12 @@ public class Browser implements WebDriver {
     public void destroy() {
         try {
             driver().close();
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
         try {
             driver().quit();
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
         setWebDriver(null);
     }
 
@@ -391,26 +451,46 @@ public class Browser implements WebDriver {
         return this;
     }
 
-    public String takeScreenshot() {
-        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        String methodName = stackTraceElements[2].getMethodName();
-        String className = stackTraceElements[2].getClassName();
-        String[] classNameSplit = className.split("\\.");
-        className = classNameSplit[classNameSplit.length-1];
+    public static String getDefaultScreenshotDir() {
+        return defaultScreenshotDir;
+    }
 
-        DateFormat format = new SimpleDateFormat("YYYYMMdd_HHmmss");
-        String title = getTitle().replaceAll("[^A-Za-z0-9]", "_");
-        return takeScreenshot(String.format(defaultScreenshotDir + "/screenshot_%s_%s_%s_%s.png",
-                format.format(new Date()), className, methodName, title));
+    public static String getDefaultScreenshotFileName() {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        String methodName = stackTraceElements[3].getMethodName();
+        String className = stackTraceElements[3].getClassName();
+        String[] classNameSplit = className.split("\\.");
+        className = classNameSplit[classNameSplit.length - 1];
+        String title;
+        try {
+            title = driver().getTitle().replaceAll("[^A-Za-z0-9]", "");
+        } catch (Exception ex) {
+            title = "unknown-gage-title";
+        }
+        return String.format("%s_%s_%s", className, methodName, title);
+    }
+
+    public String takeScreenshot() {
+        return takeScreenshot(false);
+    }
+
+    public String takeScreenshot(boolean isFullPage) {
+        return takeScreenshot(defaultScreenshotDir + "/" + getDefaultScreenshotFileName(), isFullPage);
     }
 
     public String takeScreenshot(String filepath) {
+        return takeScreenshot(filepath, false);
+    }
+
+    public String takeScreenshot(String filepath, boolean isFullPage) {
         try {
-            File scrFile = ((TakesScreenshot) driver()).getScreenshotAs(OutputType.FILE);
-            FileUtils.copyFile(scrFile, new File(filepath));
-            return new File(filepath).getAbsolutePath();
-        } catch (IOException ioex) {
-            ioex.printStackTrace();
+            File file = new File(filepath);
+            Shutterbug.shootPage(driver(), isFullPage ? Capture.FULL_SCROLL : Capture.VIEWPORT, true)
+                    .withName(file.getName())
+                    .save(file.getParentFile().getAbsolutePath());
+            return file.getAbsolutePath();
+        } catch (Exception ex) {
+            ex.printStackTrace();
             return null;
         }
     }
