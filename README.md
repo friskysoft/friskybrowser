@@ -9,14 +9,14 @@
 
 - Gradle:
 
-        compile 'com.friskysoft:friskybrowser:2.0.0'
+        implementation 'com.friskysoft:friskybrowser:2.1.0'
 
 - Maven:
 
         <dependency>
             <groupId>com.friskysoft</groupId>
             <artifactId>friskybrowser</artifactId>
-            <version>2.0.0</version>
+            <version>2.1.0</version>
         </dependency>
 
 ### Requirements
@@ -46,7 +46,7 @@ public class LoginPage {
 ```java
 LoginPage loginPage = new LoginPage();
 ```
-#### Simpler and chainable actions for an element
+#### Chainable actions for an element
 - Reduce the line of codes by chaining actions on the same element
     ```java
     loginPage.username.waitToBeVisible().clear().sendKeys("rafaat");
@@ -67,7 +67,12 @@ LoginPage loginPage = new LoginPage();
     homePage.dropdown.selectByIndex(index);
     ```
 
-And many more...
+#### Take screenshots of the page, or a single element
+```java
+browser.takeScreenshot();
+browser.takeScreenshot(true); //use true for scrolling screenshots
+homePage.menu.takeScreenshot();
+```
 
 #### Use existing webdriver
 If you are already using webdriver, it is very easy to hook it up with Frisky-Browser.
@@ -96,6 +101,9 @@ You can run any sync or async javascripts on the page you are testing. Frisky-Br
 browser.executeScript(script);
 browser.executeAsyncScript(script);
 ```
+#### Easier switching between iframes
+
+#### And many more...
 
 ### Sample test
 ```java

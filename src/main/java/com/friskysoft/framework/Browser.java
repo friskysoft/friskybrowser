@@ -4,6 +4,7 @@ import com.assertthat.selenium_shutterbug.core.Capture;
 import com.assertthat.selenium_shutterbug.core.Shutterbug;
 import io.github.bonigarcia.wdm.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -43,7 +44,7 @@ public class Browser implements WebDriver {
     private static String defaultScreenshotDir;
 
     static {
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss");
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
         defaultScreenshotDir = "./screenshots/" + format.format(new Date());
     }
 
@@ -457,8 +458,15 @@ public class Browser implements WebDriver {
 
     public static String getDefaultScreenshotFileName() {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        String methodName = stackTraceElements[3].getMethodName();
-        String className = stackTraceElements[3].getClassName();
+        StackTraceElement caller = stackTraceElements[1];
+        for (int i = 1; i < stackTraceElements.length; i++) {
+            caller = stackTraceElements[i];
+            if (!StringUtils.startsWith(caller.getClassName(), Browser.class.getPackage().getName())) {
+                break;
+            }
+        }
+        String methodName = caller.getMethodName();
+        String className = caller.getClassName();
         String[] classNameSplit = className.split("\\.");
         className = classNameSplit[classNameSplit.length - 1];
         String title;
