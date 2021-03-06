@@ -9,14 +9,14 @@
 
 - Gradle:
 
-        implementation 'com.friskysoft:friskybrowser:2.1.0'
+        implementation 'com.friskysoft:friskybrowser:2.1.1'
 
 - Maven:
 
         <dependency>
             <groupId>com.friskysoft</groupId>
             <artifactId>friskybrowser</artifactId>
-            <version>2.1.0</version>
+            <version>2.1.1</version>
         </dependency>
 
 ### Requirements
