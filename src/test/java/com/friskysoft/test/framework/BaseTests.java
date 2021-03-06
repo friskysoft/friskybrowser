@@ -17,7 +17,7 @@ import java.util.logging.Handler;
 public class BaseTests {
 
     protected Browser browser;
-    protected String browserType = BrowserType.PHANTOMJS;
+    protected String browserType = BrowserType.CHROME;
     protected String baseUrl = null;
     protected String loginPath = "/login.html";
     protected String homePath = "/home.html";
@@ -82,6 +82,6 @@ public class BaseTests {
 
     @AfterSuite
     public void afterSuite() {
-        Browser.closeAllWebdriverInstances();
+        Browser.quitAllWebdriverInstances();
     }
 }

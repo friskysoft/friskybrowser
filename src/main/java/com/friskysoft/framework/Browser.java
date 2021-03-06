@@ -44,7 +44,7 @@ public class Browser implements WebDriver {
     private static String defaultScreenshotDir;
 
     static {
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH':'mm':'ss");
         defaultScreenshotDir = "./screenshots/" + format.format(new Date());
     }
 
@@ -276,6 +276,10 @@ public class Browser implements WebDriver {
         allWebdriverInstances.forEach(Browser::close);
     }
 
+    public static void quitAllWebdriverInstances() {
+        allWebdriverInstances.forEach(Browser::quit);
+    }
+
     public static void close(WebDriver driver) {
         if (driver != null) {
             try {
@@ -288,13 +292,7 @@ public class Browser implements WebDriver {
         }
     }
 
-    @Override
-    public void close() {
-        close(driver());
-    }
-
-    @Override
-    public void quit() {
+    public static void quit(WebDriver driver) {
         if (driver() != null) {
             try {
                 driver().quit();
@@ -304,6 +302,16 @@ public class Browser implements WebDriver {
         } else {
             LOGGER.warn("quit() method was invoked on a null webdriver object");
         }
+    }
+
+    @Override
+    public void close() {
+        close(driver());
+    }
+
+    @Override
+    public void quit() {
+        quit(driver());
     }
 
     @Override
@@ -347,17 +355,30 @@ public class Browser implements WebDriver {
     }
 
     public Browser maximize() {
+        moveWindow(0, 0);
         try {
             driver().manage().window().maximize();
         } catch (Exception ex1) {
             try {
                 int w = Integer.parseInt(executeScript("return screen.width").toString());
                 int h = Integer.parseInt(executeScript("return screen.height").toString());
-                moveWindow(0, 0);
                 resize(w, h);
             } catch (Exception ex2) {
                 LOGGER.warn(String.format("Browser maximize failed with errors <%s> and <%s> ", ex1.getMessage(), ex2.getMessage()));
             }
+        }
+        return this;
+    }
+
+    public Browser moveToCenter() {
+        try {
+            int screenWidth = Integer.parseInt(executeScript("return screen.width").toString());
+            int screenHeight = Integer.parseInt(executeScript("return screen.height").toString());
+            int windowWidth = driver().manage().window().getSize().getWidth();
+            int windowHeight = driver().manage().window().getSize().getHeight();
+            moveWindow(screenWidth / 2 - windowWidth / 2, screenHeight / 2 - windowHeight / 2);
+        } catch (Exception ex1) {
+            LOGGER.warn(String.format("Browser moveToCenter failed with error <%s>", ex1.getMessage()));
         }
         return this;
     }
@@ -475,7 +496,8 @@ public class Browser implements WebDriver {
         } catch (Exception ex) {
             title = "unknown-gage-title";
         }
-        return String.format("%s_%s_%s", className, methodName, title);
+        DateFormat timeFormatter = new SimpleDateFormat("HHmmss.SSS");
+        return String.format("%s_%s_%s_%s", className, methodName, title, timeFormatter.format(new Date()));
     }
 
     public String takeScreenshot() {

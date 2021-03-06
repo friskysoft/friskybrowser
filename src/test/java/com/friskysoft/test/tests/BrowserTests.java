@@ -61,6 +61,14 @@ public class BrowserTests extends BaseTests {
     }
 
     @Test
+    public void moveToCenter() {
+        browser
+                .minimize()
+                .resize(800, 600)
+                .moveToCenter();
+    }
+
+    @Test
     public void minimize() {
         browser.minimize();
     }
