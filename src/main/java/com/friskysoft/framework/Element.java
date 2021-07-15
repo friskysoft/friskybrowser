@@ -35,6 +35,19 @@ public class Element {
         ID, XPATH, CSS, CLASS_NAME, TAG, NAME, LINK_TEXT, PARTIAL_LINK_TEXT
     }
 
+    private static void logWarningWithDeclaringClass(String text) {
+        try {
+            String declaringClassInfo = Utilities.getDeclaringClassInfo(Element.class);
+            if (declaringClassInfo != null && !declaringClassInfo.trim().isEmpty()) {
+                LOGGER.warn(declaringClassInfo + " - " + text);
+            } else {
+                LOGGER.warn(text);
+            }
+        } catch (Exception ex) {
+            //ignore
+        }
+    }
+
     private static void logInit(String initUsing) {
         try {
             String declaringClassInfo = Utilities.getDeclaringClassInfo(Element.class);
@@ -85,7 +98,7 @@ public class Element {
     public Element(String locator) {
         LocatorType locatorType;
         if (locator == null || locator.isEmpty()) {
-            LOGGER.warn("null or empty String was used as element locator.");
+            logWarningWithDeclaringClass("null or empty String was used as element locator.");
             setBy(By.cssSelector(""));
             return;
         }

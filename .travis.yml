@@ -22,4 +22,4 @@ cache:
 install: true
 
 script:
-  - ./gradlew test --info
+  - ./gradlew test
