@@ -1,6 +1,6 @@
 # Frisky-Browser
 
-[![Build Status](https://travis-ci.org/friskysoft/friskybrowser.svg?branch=master)](https://travis-ci.org/friskysoft/friskybrowser/builds)
+[![Build Status](https://travis-ci.com/friskysoft/friskybrowser.svg?branch=master)](https://travis-ci.com/friskysoft/friskybrowser/builds)
 [![Maven Central](https://img.shields.io/maven-central/v/com.friskysoft/friskybrowser.svg?label=Maven%20Central)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.friskysoft%22%20a%3A%22friskybrowser%22)
 
 📦 **Frisky-Browser** is a java wrapper library created on top of **Selenium Webdriver**. You can use **Frisky-Browser** features with your existing webdriver tests, or you can set up a new one within a matter of minutes. **Frisky-Browser** uses a thread static webdriver under the hood, so you can run parallel tests without any conflicts (with the assumption that each test is using a single thread).
