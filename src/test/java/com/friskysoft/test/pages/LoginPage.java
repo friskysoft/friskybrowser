@@ -6,7 +6,10 @@ import org.openqa.selenium.By;
 
 public class LoginPage {
 
+    public Element blankLocator = new Element("");
+    public Element nullLocator = new Element((String) null);
     public Element form = new Element("form.login");
+    public Element contentHeader = new Element(".content #header");
 
     public Element username = new Element("#username");
     public Element password = new Element("#password");

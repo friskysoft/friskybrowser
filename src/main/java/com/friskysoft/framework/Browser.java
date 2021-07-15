@@ -3,7 +3,6 @@ package com.friskysoft.framework;
 import com.assertthat.selenium_shutterbug.core.Capture;
 import com.assertthat.selenium_shutterbug.core.Shutterbug;
 import io.github.bonigarcia.wdm.*;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -18,7 +17,6 @@ import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.opera.OperaDriver;
 import org.openqa.selenium.opera.OperaOptions;
 import org.openqa.selenium.remote.BrowserType;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.safari.SafariOptions;
@@ -28,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
@@ -38,8 +35,8 @@ import java.util.concurrent.TimeUnit;
 
 public class Browser implements WebDriver {
 
-    private static ThreadLocal<WebDriver> wrappedThreadLocalDriver = new ThreadLocal<>();
-    private static Set<WebDriver> allWebdriverInstances = new HashSet<>();
+    private static final ThreadLocal<WebDriver> wrappedThreadLocalDriver = new ThreadLocal<>();
+    private static final Set<WebDriver> allWebdriverInstances = new HashSet<>();
     private static Browser singletonBrowser;
     private static String defaultScreenshotDir;
 
@@ -76,7 +73,8 @@ public class Browser implements WebDriver {
     /**
      * Use newInstance() methods instead
      */
-    private Browser() {}
+    private Browser() {
+    }
 
     public static Browser getInstance() {
         if (singletonBrowser == null) {
@@ -89,13 +87,21 @@ public class Browser implements WebDriver {
         return allWebdriverInstances;
     }
 
-    @SuppressWarnings("deprecation")
     public static Browser newLocalDriver(String browserType) {
+        return newLocalDriver(browserType, false);
+    }
+
+    @SuppressWarnings("deprecation")
+    public static Browser newLocalDriver(String browserType, boolean hideChromeAutomationFeatures) {
         WebDriver driver;
-        Capabilities capabilities = getDefaultBrowserCapabilities(browserType);
-        switch (browserType) {
+        MutableCapabilities capabilities = getDefaultBrowserCapabilities(browserType);
+        switch (browserType.toLowerCase()) {
             case BrowserType.CHROME:
                 WebDriverManager.chromedriver().setup();
+                if (hideChromeAutomationFeatures && capabilities instanceof ChromeOptions) {
+                    ((ChromeOptions) capabilities).setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
+                    ((ChromeOptions) capabilities).addArguments("--disable-blink-features=AutomationControlled");
+                }
                 driver = new ChromeDriver(capabilities);
                 break;
             case BrowserType.FIREFOX:
@@ -121,6 +127,7 @@ public class Browser implements WebDriver {
                 break;
             case BrowserType.HTMLUNIT:
             case BrowserType.PHANTOMJS:
+            case "headless":
             default:
                 WebDriverManager.chromedriver().setup();
                 ChromeOptions chromeOptions = new ChromeOptions();
@@ -149,13 +156,16 @@ public class Browser implements WebDriver {
     }
 
     public static Browser newRemoteDriver(URL remoteHubUrl, String browserType) {
-        WebDriver remoteDriver = new RemoteWebDriver(remoteHubUrl, getDefaultBrowserCapabilities(browserType));
+        return newRemoteDriver(remoteHubUrl, getDefaultBrowserCapabilities(browserType));
+    }
+
+    public static Browser newRemoteDriver(URL remoteHubUrl, Capabilities capabilities) {
+        WebDriver remoteDriver = new RemoteWebDriver(remoteHubUrl, capabilities);
         return setWebDriver(remoteDriver);
     }
 
-    @SuppressWarnings("deprecation")
-    private static Capabilities getDefaultBrowserCapabilities(String browserType) {
-        switch (browserType) {
+    private static MutableCapabilities getDefaultBrowserCapabilities(String browserType) {
+        switch (browserType.toLowerCase()) {
             case BrowserType.FIREFOX:
                 return new FirefoxOptions();
             case BrowserType.SAFARI:
@@ -168,20 +178,12 @@ public class Browser implements WebDriver {
                 return new InternetExplorerOptions();
             case BrowserType.EDGE:
                 return new EdgeOptions();
-            case BrowserType.ANDROID:
-                return DesiredCapabilities.android();
-            case BrowserType.IPHONE:
-                return DesiredCapabilities.iphone();
-            case BrowserType.IPAD:
-                return DesiredCapabilities.ipad();
             case BrowserType.HTMLUNIT:
             case BrowserType.PHANTOMJS:
             case BrowserType.CHROME:
+            case "headless":
             default:
-                ChromeOptions chromeOptions = new ChromeOptions();
-                chromeOptions.setExperimentalOption("excludeSwitches", Arrays.asList("enable-automation"));
-                chromeOptions.addArguments("--disable-blink-features=AutomationControlled");
-                return chromeOptions;
+                return new ChromeOptions();
         }
     }
 
@@ -203,7 +205,7 @@ public class Browser implements WebDriver {
         WINDOWS, MAC, LINUX
     }
 
-    private static PlatformType getPlatformType() {
+    public static PlatformType getPlatformType() {
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("mac")) {
             return PlatformType.MAC;
@@ -216,7 +218,7 @@ public class Browser implements WebDriver {
         }
     }
 
-    private static ArchType getArchType() {
+    public static ArchType getArchType() {
         boolean is64bit;
         if (System.getProperty("os.name").contains("Windows")) {
             is64bit = (System.getenv("ProgramFiles(x86)") != null);
@@ -496,7 +498,7 @@ public class Browser implements WebDriver {
         } catch (Exception ex) {
             title = "unknown-gage-title";
         }
-        DateFormat timeFormatter = new SimpleDateFormat("HHmmss.SSS");
+        DateFormat timeFormatter = new SimpleDateFormat("'T'HHmmss'+'SSS");
         return String.format("%s_%s_%s_%s", className, methodName, title, timeFormatter.format(new Date()));
     }
 
@@ -518,7 +520,7 @@ public class Browser implements WebDriver {
             Shutterbug.shootPage(driver(), isFullPage ? Capture.FULL_SCROLL : Capture.VIEWPORT, true)
                     .withName(file.getName())
                     .save(file.getParentFile().getAbsolutePath());
-            return file.getAbsolutePath();
+            return file.getAbsolutePath() + ".png";
         } catch (Exception ex) {
             ex.printStackTrace();
             return null;

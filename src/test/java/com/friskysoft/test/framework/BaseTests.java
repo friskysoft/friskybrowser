@@ -2,8 +2,8 @@ package com.friskysoft.test.framework;
 
 import com.friskysoft.framework.Browser;
 import com.friskysoft.test.pages.*;
-import com.friskysoft.test.utils.ImageUploader;
-import org.openqa.selenium.remote.BrowserType;
+import com.friskysoft.test.utils.image.ImageUploader;
+import com.friskysoft.test.utils.image.ImgbbImageUploader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.ITestResult;
@@ -17,7 +17,7 @@ import java.util.logging.Handler;
 public class BaseTests {
 
     protected Browser browser;
-    protected String browserType = BrowserType.CHROME;
+    protected String browserType = "headless";
     protected String baseUrl = null;
     protected String loginPath = "/login.html";
     protected String homePath = "/home.html";
@@ -35,6 +35,8 @@ public class BaseTests {
     protected Logger getLogger() {
         return LoggerFactory.getLogger(this.getClass());
     }
+
+    protected static ImageUploader imageUploader = new ImgbbImageUploader();
 
     static {
         java.util.logging.Logger root = java.util.logging.Logger.getLogger("");
@@ -54,7 +56,8 @@ public class BaseTests {
     public void setupBrowser(Method method) {
         browser = Browser.newLocalDriver(browserType)
                 .setPageLoadTimeout(30, TimeUnit.SECONDS)
-                .setImplicitWait(5, TimeUnit.SECONDS);
+                .setImplicitWait(5, TimeUnit.SECONDS)
+                .maximize();
     }
 
     @BeforeMethod
@@ -67,7 +70,7 @@ public class BaseTests {
         if (result.getStatus() != ITestResult.SUCCESS) {
             try {
                 String screenshot = browser.takeScreenshot();
-                String screenshotUrl = ImageUploader.upload(screenshot);
+                String screenshotUrl = imageUploader.upload(screenshot);
                 getLogger().error("Test failed! Screenshot uploaded at: " + screenshotUrl);
             } catch (Exception ex) {
                 ex.printStackTrace();

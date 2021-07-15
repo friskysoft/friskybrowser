@@ -67,6 +67,41 @@ public class ElementTests extends BaseTests {
         loginPage.username.clear();
         value = loginPage.username.getValue();
         Assert.assertEquals(value, "");
+
+        loginPage.username.sendKeys("ab", 3).backspace(3).sendKeys("xy", 2);
+        value = loginPage.username.getValue();
+        Assert.assertEquals(value, "abaxyxy");
+    }
+
+    @Test
+    public void textAsserts() {
+        loginPage.login(TestConstants.TEST_USERNAME, "");
+        Assert.assertEquals(browser.getCurrentUrl(), baseUrl + loginPath);
+        loginPage.flashMessage.waitToBeVisible()
+                .assertTextIsEqualTo("Password cannot be empty")
+                .assertTextIsEqualTo("passWORD caNNot Be Empty", false)
+                .assertTextContainsString("cannot")
+                .assertTextContainsString("CanNOT BE", false);
+
+        Assertions.assertThatThrownBy(() ->
+                loginPage.flashMessage.waitToBeVisible().assertTextIsEqualTo("password cannot be empty")
+        ).isInstanceOf(AssertionError.class);
+
+        Assertions.assertThatThrownBy(() ->
+                loginPage.flashMessage.waitToBeVisible().assertTextIsEqualTo("cannot be empty", false)
+        ).isInstanceOf(AssertionError.class);
+
+        Assertions.assertThatThrownBy(() ->
+                loginPage.flashMessage.waitToBeVisible().assertTextContainsString("can be")
+        ).isInstanceOf(AssertionError.class);
+
+        Assertions.assertThatThrownBy(() ->
+                loginPage.flashMessage.waitToBeVisible().assertTextContainsString("CANNOT")
+        ).isInstanceOf(AssertionError.class);
+
+        Assertions.assertThatThrownBy(() ->
+                loginPage.flashMessage.waitToBeVisible().assertTextContainsString("CAN BE", false)
+        ).isInstanceOf(AssertionError.class);
     }
 
     @Test
