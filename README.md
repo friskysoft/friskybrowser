@@ -3,20 +3,20 @@
 [![Build Status](https://travis-ci.org/friskysoft/friskybrowser.svg?branch=master)](https://travis-ci.org/friskysoft/friskybrowser/builds)
 [![Maven Central](https://img.shields.io/maven-central/v/com.friskysoft/friskybrowser.svg?label=Maven%20Central)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.friskysoft%22%20a%3A%22friskybrowser%22)
 
-**Frisky-Browser** is a java wrapper library created on top of **Selenium Webdriver**. You can use **Frisky-Browser** features with your existing webdriver tests, or you can set up a new one within a matter of minutes. **Frisky-Browser** uses a thread static webdriver under the hood, so you can run parallel tests without any conflicts (with the assumption that each test is using a single thread).
+📦 **Frisky-Browser** is a java wrapper library created on top of **Selenium Webdriver**. You can use **Frisky-Browser** features with your existing webdriver tests, or you can set up a new one within a matter of minutes. **Frisky-Browser** uses a thread static webdriver under the hood, so you can run parallel tests without any conflicts (with the assumption that each test is using a single thread).
 
 **To add to your project's dependency**
 
 - Gradle:
 
-        implementation 'com.friskysoft:friskybrowser:2.1.1'
+        implementation 'com.friskysoft:friskybrowser:2.2.0'
 
 - Maven:
 
         <dependency>
             <groupId>com.friskysoft</groupId>
             <artifactId>friskybrowser</artifactId>
-            <version>2.1.1</version>
+            <version>2.2.0</version>
         </dependency>
 
 ### Requirements
@@ -105,6 +105,8 @@ browser.executeAsyncScript(script);
 
 #### And many more...
 
+⚠️ See `Browser` and `Element` classes for a list of all supported methods.
+
 ### Sample test
 ```java
 @Test
@@ -134,4 +136,4 @@ public void loginTest() {
 
 Visit this link for a full example project: https://github.com/friskysoft/friskybrowser-example
 
-Please feel free to report issues at [rafaat123@gmail.com](mailto:rafaat123@gmail.com). Contributions are always welcome!
+Please feel free to report issues to [rafaat123@gmail.com](mailto:rafaat123@gmail.com). Contributions are always welcome!

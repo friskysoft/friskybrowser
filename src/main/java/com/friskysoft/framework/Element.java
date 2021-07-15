@@ -1,8 +1,8 @@
 package com.friskysoft.framework;
 
-import com.assertthat.selenium_shutterbug.core.Capture;
 import com.assertthat.selenium_shutterbug.core.CaptureElement;
 import com.assertthat.selenium_shutterbug.core.Shutterbug;
+import org.assertj.core.api.Assertions;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import static com.friskysoft.framework.Browser.driver;
-import static com.friskysoft.framework.Browser.sleep;
 
 public class Element {
 
@@ -196,6 +195,16 @@ public class Element {
         return driver().findElements(getBy());
     }
 
+    public Element pause(long milliseconds) {
+        Browser.sleep(milliseconds);
+        return this;
+    }
+
+    public Element sleep(long milliseconds) {
+        Browser.sleep(milliseconds);
+        return this;
+    }
+
     public Element click() {
         long start = System.currentTimeMillis();
         LOGGER.info("Element click: " + this);
@@ -279,6 +288,24 @@ public class Element {
         return this;
     }
 
+    public Element sendKeys(CharSequence key, int repeat) {
+        LOGGER.info("Element sendKeys: " + this + " repeating '" + key + "' for " + repeat + " times");
+        run(() -> {
+            for (int i = 0; i < repeat; i++) {
+                getWebElement().sendKeys(key);
+            }
+        });
+        return this;
+    }
+
+    public Element backspace() {
+        return sendKeys(Keys.BACK_SPACE);
+    }
+
+    public Element backspace(int repeat) {
+        return sendKeys(Keys.BACK_SPACE, repeat);
+    }
+
     public Element submit() {
         LOGGER.info("Element submit: " + this);
         run(() -> getWebElement().submit());
@@ -288,6 +315,12 @@ public class Element {
     public Element clear() {
         LOGGER.info("Element text clear: " + this);
         run(() -> getWebElement().clear());
+        String value = this.getValue();
+        //if value is still not empty, use backspaces to clear the text
+        if (!value.isEmpty()) {
+            LOGGER.warn("Text could not be cleared using selenium clear(), so using backspaces instead. Element: " + this);
+            this.backspace(value.length());
+        }
         return this;
     }
 
@@ -365,7 +398,6 @@ public class Element {
 
     public boolean isPresent() {
         return isDisplayed();
-
     }
 
     public Point getLocation() {
@@ -517,6 +549,32 @@ public class Element {
         }
         LOGGER.info("Switching to frame: " + this);
         driver().switchTo().frame(getWebElement());
+        return this;
+    }
+
+    public Element assertTextIsEqualTo(String expected) {
+        return assertTextIsEqualTo(expected, true);
+    }
+
+    public Element assertTextIsEqualTo(String expected, boolean matchCase) {
+        if (matchCase) {
+            Assertions.assertThat(this.getText()).as("Text from " + this).isEqualTo(expected);
+        } else {
+            Assertions.assertThat(this.getText()).as("Text from " + this).isEqualToIgnoringCase(expected);
+        }
+        return this;
+    }
+
+    public Element assertTextContainsString(String expectedSubString) {
+        return assertTextContainsString(expectedSubString, true);
+    }
+
+    public Element assertTextContainsString(String expectedSubString, boolean matchCase) {
+        if (matchCase) {
+            Assertions.assertThat(this.getText()).as("Text from " + this).contains(expectedSubString);
+        } else {
+            Assertions.assertThat(this.getText()).as("Text from " + this).containsIgnoringCase(expectedSubString);
+        }
         return this;
     }
 
