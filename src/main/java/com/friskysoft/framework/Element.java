@@ -85,7 +85,9 @@ public class Element {
     public Element(String locator) {
         LocatorType locatorType;
         if (locator == null || locator.isEmpty()) {
-            throw new IllegalArgumentException("Locator cannot be null or empty");
+            LOGGER.warn("null or empty String was used as element locator.");
+            setBy(By.cssSelector(""));
+            return;
         }
         locator = locator.trim();
         if (locator.startsWith(".") || locator.startsWith("#")) {
@@ -115,6 +117,9 @@ public class Element {
         } else if (locator.toLowerCase().startsWith("linktext=")) {
             locatorType = LocatorType.LINK_TEXT;
             locator = locator.replaceFirst("linktext=", "");
+        } else if (locator.toLowerCase().startsWith("partiallinktext=")) {
+            locatorType = LocatorType.PARTIAL_LINK_TEXT;
+            locator = locator.replaceFirst("partiallinktext=", "");
         } else if (locator.toLowerCase().startsWith("tag=")) {
             locatorType = LocatorType.TAG;
             locator = locator.replaceFirst("tag=", "");
