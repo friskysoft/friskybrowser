@@ -7,7 +7,7 @@ apply plugin: 'idea'
 
 project.ext {
     javaVersion = '1.8'
-    project.version = '2.2.0'
+    project.version = '2.2.1'
 }
 
 sourceCompatibility = javaVersion
@@ -21,20 +21,19 @@ idea {
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
-    compile 'org.seleniumhq.selenium:selenium-java:[3.141.59,4.0)'
-    compile 'io.github.bonigarcia:webdrivermanager:[4.4.3,4.5)'
-    compile group: 'com.assertthat', name: 'selenium-shutterbug', version: '1.5'
-    compile 'org.assertj:assertj-core:[3.20,)'
-    testCompile 'org.testng:testng:[6.14,)'
-    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '[4.0.0-rc-1,5)'
+    implementation group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '[5.0.1,)'
+    implementation group: 'com.assertthat', name: 'selenium-shutterbug', version: '1.5'
+    implementation group: 'org.assertj', name: 'assertj-core', version: '[3.20,)'
+    testImplementation group: 'org.testng', name: 'testng', version: '7.4.0'
+    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 }
 
 clean {
-    delete 'screenshots', 'target', 'build', 'out', 'test-output', 'test-results'
+    delete 'screenshots', 'target', 'build', 'out', 'test-output', 'test-results', 'video'
 }
 
 test {
@@ -46,7 +45,7 @@ test {
     }
 
     testLogging {
-        events "passed", "skipped", "failed"
+        events 'passed', 'skipped', 'failed'
         showStandardStreams = true
         exceptionFormat = 'full'
     }

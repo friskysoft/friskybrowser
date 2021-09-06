@@ -11,6 +11,8 @@
 bin/
 tools/
 **/screenshots/
+**/video/
+**/gif/
 .mtj.tmp
 **/*.jar
 **/*.war

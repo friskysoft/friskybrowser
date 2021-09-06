@@ -1,4 +1,4 @@
-package com.friskysoft.framework;
+package com.friskysoft.framework.utils;
 
 public class Utilities {
 
@@ -34,7 +34,7 @@ public class Utilities {
 
             // StackTraceElement[] stack:
             //   0 = java.lang.Thread.getStackTrace
-            //   1 = com.friskysoft.framework.Utilities.getDeclaringClassInfo
+            //   1 = com.friskysoft.framework.utils.Utilities.getDeclaringClassInfo
             //   2 = invokedClass
             //   3-9 = check for declaringClass
 

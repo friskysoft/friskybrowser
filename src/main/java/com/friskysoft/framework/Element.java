@@ -2,6 +2,7 @@ package com.friskysoft.framework;
 
 import com.assertthat.selenium_shutterbug.core.CaptureElement;
 import com.assertthat.selenium_shutterbug.core.Shutterbug;
+import com.friskysoft.framework.utils.Utilities;
 import org.assertj.core.api.Assertions;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
