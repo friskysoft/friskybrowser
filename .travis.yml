@@ -1,9 +1,9 @@
 language: java
 
 jdk:
-  - oraclejdk8
+  - openjdk11
 
-dist: trusty
+dist: xenial
 
 sudo: required
 
@@ -11,15 +11,13 @@ addons:
   chrome: stable
 
 before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+  - rm -rf  $HOME/.gradle/caches/
 
 cache:
   directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
+    - $HOME/.gradle/
 
 install: true
 
 script:
-  - ./gradlew test
+  - ./gradlew clean test
