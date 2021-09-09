@@ -11,13 +11,15 @@ addons:
   chrome: stable
 
 before_cache:
-  - rm -rf  $HOME/.gradle/caches/
+  - rm -rf  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -rf $HOME/.gradle/caches/*/plugin-resolution/
 
 cache:
   directories:
     - $HOME/.gradle/
+    - $HOME/.m2/
 
 install: true
 
 script:
-  - ./gradlew clean test
+  - ./gradlew test

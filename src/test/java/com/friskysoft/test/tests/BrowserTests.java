@@ -1,5 +1,6 @@
 package com.friskysoft.test.tests;
 
+import com.friskysoft.framework.Browser;
 import com.friskysoft.test.framework.BaseTests;
 import com.friskysoft.test.utils.TestConstants;
 import org.assertj.core.api.Assertions;
@@ -103,6 +104,7 @@ public class BrowserTests extends BaseTests {
 
         browser.executeScript("alert('Handle me!')");
 
+        Browser.sleep(1000);
         Assertions.assertThatThrownBy(() -> loginPage.username.sendKeys("foo")).isInstanceOf(UnhandledAlertException.class);
         //FIXME: Assertions.assertThat(browser.getAlertText()).isEqualTo("Handle me!");
 
