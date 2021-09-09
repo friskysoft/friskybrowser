@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '[4.0.0-rc-1,5)'
+    implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '[3.141.59,4)'
     implementation group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '[5.0.1,)'
     implementation group: 'com.assertthat', name: 'selenium-shutterbug', version: '1.5'
     implementation group: 'org.assertj', name: 'assertj-core', version: '[3.20,)'
@@ -46,7 +46,7 @@ test {
 
     testLogging {
         events 'passed', 'skipped', 'failed'
-        showStandardStreams = true
+        showStandardStreams = false
         exceptionFormat = 'full'
     }
 
