@@ -1,6 +1,7 @@
 package com.friskysoft.test.framework;
 
 import com.friskysoft.framework.Browser;
+import com.friskysoft.framework.utils.GifRecorder;
 import com.friskysoft.test.pages.*;
 import com.friskysoft.test.utils.image.ImageUploader;
 import com.friskysoft.test.utils.image.ImgbbImageUploader;
@@ -47,26 +48,24 @@ public class BaseTests {
     }
 
     @BeforeClass
-    public void setupBaseUrl() {
+    public void beforeClass() {
         URL resource = this.getClass().getResource("/test-web");
         baseUrl = "file://" + resource.getPath();
     }
 
     @BeforeMethod
-    public void setupBrowser(Method method) {
+    public void beforeMethod(Method method) {
+        getLogger().info("Running " + method.getDeclaringClass().getName() + "." + method.getName());
         browser = Browser.newLocalDriver(browserType)
                 .setPageLoadTimeout(30, TimeUnit.SECONDS)
                 .setImplicitWait(5, TimeUnit.SECONDS)
                 .maximize();
-    }
-
-    @BeforeMethod
-    public void beforeMethod(Method method) {
-        getLogger().info("Running " + method.getDeclaringClass().getName() + "." + method.getName());
+        GifRecorder.start();
     }
 
     @AfterMethod
-    public void failureScreenshot(ITestResult result) {
+    public void afterMethod(ITestResult result) {
+        GifRecorder.stopAndSave(result.getMethod().getRealClass().getSimpleName() + "_" + result.getMethod().getMethodName());
         if (result.getStatus() != ITestResult.SUCCESS) {
             try {
                 String screenshot = browser.takeScreenshot();
@@ -76,10 +75,6 @@ public class BaseTests {
                 ex.printStackTrace();
             }
         }
-    }
-
-    @AfterMethod
-    public void teardownBrowser() {
         browser.destroy();
     }
 

@@ -2,8 +2,9 @@ package com.friskysoft.framework;
 
 import com.assertthat.selenium_shutterbug.core.Capture;
 import com.assertthat.selenium_shutterbug.core.Shutterbug;
+import com.friskysoft.framework.utils.Utilities;
 import io.github.bonigarcia.wdm.*;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -39,10 +40,12 @@ public class Browser implements WebDriver {
     private static final Set<WebDriver> allWebdriverInstances = new HashSet<>();
     private static Browser singletonBrowser;
     private static String defaultScreenshotDir;
+    private static String defaultVideoDir;
 
     static {
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH':'mm':'ss");
         defaultScreenshotDir = "./screenshots/" + format.format(new Date());
+        defaultVideoDir = "./video/" + format.format(new Date());
     }
 
     public static final int DEFAULT_IMPLICIT_WAIT = 10;
@@ -57,7 +60,7 @@ public class Browser implements WebDriver {
     public static WebDriver driver() {
         WebDriver driver = wrappedThreadLocalDriver.get();
         if (driver == null) {
-            LOGGER.warn("ThreadLocal driver is null, did you forget to call setWebDriver(driver)?");
+            LOGGER.trace("ThreadLocal driver is null, did you forget to call setWebDriver(driver)?");
         }
         return driver;
     }
@@ -117,7 +120,6 @@ public class Browser implements WebDriver {
                 driver = new OperaDriver(capabilities);
                 break;
             case BrowserType.IE:
-            case BrowserType.IEXPLORE:
                 WebDriverManager.iedriver().setup();
                 driver = new InternetExplorerDriver(capabilities);
                 break;
@@ -126,7 +128,6 @@ public class Browser implements WebDriver {
                 driver = new EdgeDriver(capabilities);
                 break;
             case BrowserType.HTMLUNIT:
-            case BrowserType.PHANTOMJS:
             case "headless":
             default:
                 WebDriverManager.chromedriver().setup();
@@ -174,12 +175,10 @@ public class Browser implements WebDriver {
             case BrowserType.OPERA_BLINK:
                 return new OperaOptions();
             case BrowserType.IE:
-            case BrowserType.IEXPLORE:
                 return new InternetExplorerOptions();
             case BrowserType.EDGE:
                 return new EdgeOptions();
             case BrowserType.HTMLUNIT:
-            case BrowserType.PHANTOMJS:
             case BrowserType.CHROME:
             case "headless":
             default:
@@ -290,7 +289,7 @@ public class Browser implements WebDriver {
                 LOGGER.warn("close() method threw an exception: " + ex.getMessage());
             }
         } else {
-            LOGGER.warn("close() method was invoked on a null webdriver object");
+            LOGGER.trace("close() method was invoked on a null webdriver object");
         }
     }
 
@@ -302,7 +301,7 @@ public class Browser implements WebDriver {
                 LOGGER.warn("quit() method threw an exception: " + ex.getMessage());
             }
         } else {
-            LOGGER.warn("quit() method was invoked on a null webdriver object");
+            LOGGER.trace("quit() method was invoked on a null webdriver object");
         }
     }
 
@@ -477,6 +476,27 @@ public class Browser implements WebDriver {
 
     public static String getDefaultScreenshotDir() {
         return defaultScreenshotDir;
+    }
+
+    public static String getDefaultVideoDir() {
+        return defaultVideoDir;
+    }
+
+    public static String getDefaultVideoFileName() {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        StackTraceElement caller = stackTraceElements[1];
+        for (int i = 1; i < stackTraceElements.length; i++) {
+            caller = stackTraceElements[i];
+            if (!StringUtils.startsWith(caller.getClassName(), Browser.class.getPackage().getName())) {
+                break;
+            }
+        }
+        String methodName = caller.getMethodName();
+        String className = caller.getClassName();
+        String[] classNameSplit = className.split("\\.");
+        className = classNameSplit[classNameSplit.length - 1];
+        DateFormat timeFormatter = new SimpleDateFormat("'T'HHmmss'+'SSS");
+        return String.format("%s_%s_%s", className, methodName, timeFormatter.format(new Date()));
     }
 
     public static String getDefaultScreenshotFileName() {
