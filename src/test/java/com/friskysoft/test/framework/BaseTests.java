@@ -18,7 +18,7 @@ import java.util.logging.Handler;
 public class BaseTests {
 
     protected Browser browser;
-    protected String browserType = "headless";
+    protected String browserType = "chrome headless";
     protected String baseUrl = null;
     protected String loginPath = "/login.html";
     protected String homePath = "/home.html";

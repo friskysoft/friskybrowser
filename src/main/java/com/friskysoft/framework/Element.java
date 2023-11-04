@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -262,7 +263,7 @@ public class Element {
 
     public Element waitToBeVisible(int timeOutInSeconds) {
         LOGGER.info("Waiting for element to be visible: " + this);
-        run(() -> new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.visibilityOfElementLocated(wrappedBy)));
+        run(() -> new WebDriverWait(driver(), Duration.ofSeconds(timeOutInSeconds)).until(ExpectedConditions.visibilityOfElementLocated(wrappedBy)));
         return this;
     }
 
@@ -272,7 +273,7 @@ public class Element {
 
     public Element waitToBePresent(int timeOutInSeconds) {
         LOGGER.info("Waiting for element to be present: " + this);
-        run(() -> new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.presenceOfElementLocated(wrappedBy)));
+        run(() -> new WebDriverWait(driver(), Duration.ofSeconds(timeOutInSeconds)).until(ExpectedConditions.presenceOfElementLocated(wrappedBy)));
         return this;
     }
 
@@ -283,7 +284,7 @@ public class Element {
     public Element waitToBeClickable(int timeOutInSeconds) {
         waitToBeClickable = timeOutInSeconds;
         LOGGER.info("Waiting for element to be clickable: " + this);
-        run(() -> new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.elementToBeClickable(wrappedBy)));
+        run(() -> new WebDriverWait(driver(), Duration.ofSeconds(timeOutInSeconds)).until(ExpectedConditions.elementToBeClickable(wrappedBy)));
         return this;
     }
 
@@ -293,7 +294,7 @@ public class Element {
 
     public Element waitToBeInvisible(int timeOutInSeconds) {
         LOGGER.info("Waiting for element to disappear: " + this);
-        run(() -> new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.invisibilityOfElementLocated(wrappedBy)));
+        run(() -> new WebDriverWait(driver(), Duration.ofSeconds(timeOutInSeconds)).until(ExpectedConditions.invisibilityOfElementLocated(wrappedBy)));
         return this;
     }
 
@@ -407,7 +408,7 @@ public class Element {
 
     public boolean isDisplayed() {
         try {
-            Wait<WebDriver> wait = new WebDriverWait(driver(), 2);
+            Wait<WebDriver> wait = new WebDriverWait(driver(), Duration.ofSeconds(2));
             wait.until(ExpectedConditions.visibilityOf(getWebElement()));
             return true;
         } catch (Throwable tr) {

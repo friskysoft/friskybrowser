@@ -1,10 +1,7 @@
 package com.friskysoft.test.tests;
 
-import com.friskysoft.framework.Browser;
 import com.friskysoft.test.framework.BaseTests;
 import com.friskysoft.test.utils.TestConstants;
-import org.assertj.core.api.Assertions;
-import org.openqa.selenium.UnhandledAlertException;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

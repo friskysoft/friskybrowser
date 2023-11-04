@@ -9,7 +9,7 @@
 
 - Gradle:
 
-        implementation 'com.friskysoft:friskybrowser:2.2.0'
+        implementation 'com.friskysoft:friskybrowser:3.0.0'
 
 - Maven:
 
@@ -20,8 +20,8 @@
         </dependency>
 
 ### Requirements
-- Java 8 or above.
-- Selenium 3 or above (downloaded automatically when you use maven or gradle or a similar dependency management tool).
+- Java 11 or above.
+- Selenium 4 or above (downloaded automatically when you use maven or gradle or a similar dependency management tool).
 
 ### Features
 #### Simple and flexible element constructors
