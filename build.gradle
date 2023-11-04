@@ -25,6 +25,9 @@ clean {
 }
 
 test {
+    systemProperties System.getProperties()
+    systemProperties System.getenv()
+
     useTestNG() {
         options {
             parallel = 'methods'

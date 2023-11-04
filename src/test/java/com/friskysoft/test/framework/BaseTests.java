@@ -18,7 +18,6 @@ import java.util.logging.Handler;
 public class BaseTests {
 
     protected Browser browser;
-    protected String browserType = "chrome headless";
     protected String baseUrl = null;
     protected String loginPath = "/login.html";
     protected String homePath = "/home.html";
@@ -37,7 +36,7 @@ public class BaseTests {
         return LoggerFactory.getLogger(this.getClass());
     }
 
-    protected static ImageUploader imageUploader = new ImgbbImageUploader();
+    protected static final ImageUploader imageUploader = new ImgbbImageUploader();
 
     static {
         java.util.logging.Logger root = java.util.logging.Logger.getLogger("");
@@ -47,15 +46,22 @@ public class BaseTests {
         }
     }
 
+    private String browserType() {
+        final int choice = (int) (Thread.currentThread().getId() % 2);
+        return new String[]{"chrome headless", "firefox headless"}[choice];
+    }
+
     @BeforeClass
     public void beforeClass() {
-        URL resource = this.getClass().getResource("/test-web");
+        final URL resource = this.getClass().getResource("/test-web");
         baseUrl = "file://" + resource.getPath();
     }
 
     @BeforeMethod
     public void beforeMethod(Method method) {
-        getLogger().info("Running " + method.getDeclaringClass().getName() + "." + method.getName());
+        final String browserType = browserType();
+        getLogger().info("Browser: {}", browserType);
+        getLogger().info("Running {}.{}", method.getDeclaringClass().getName(), method.getName());
         browser = Browser.newLocalDriver(browserType)
                 .setPageLoadTimeout(30, TimeUnit.SECONDS)
                 .setImplicitWait(5, TimeUnit.SECONDS)

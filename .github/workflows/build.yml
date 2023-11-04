@@ -1,27 +1,47 @@
 name: Build
-run-name: ${{ github.actor }} is running a build on branch ${{ github.ref }} 🚀
 on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+
       - name: Check out repository code
         uses: actions/checkout@v4
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
       - run: chrome --version
+
       - name: Setup Firefox
         uses: browser-actions/setup-firefox@v1
       - run: firefox --version
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '11'
+          cache: 'gradle'
+
+      - run: echo "🖥️ The workflow is now ready to execute tests on the runner."
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
+
       - name: Run tests
         run: |
-          ./gradlew clean test
+          ./gradlew clean test --no-daemon
+
       - run: echo "ℹ️ This job's status is ${{ job.status }}."
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Tests
+          path: build/test-results/test/*.xml
+          reporter: java-junit
