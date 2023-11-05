@@ -207,7 +207,8 @@ public class ElementTests extends BaseTests {
         Assertions.assertThatThrownBy(() -> overlapPage.searchButton.click())
                 .isInstanceOf(WebDriverException.class)
                 .hasMessageContaining("is not clickable at point")
-                .hasMessageContaining("Other element would receive the click");
+                .hasMessageContaining("because another element")
+                .hasMessageContaining("obscures it");
 
         browser.open(baseUrl + overlapPath);
         overlapPage.searchButton.waitToBeClickable(6).click();
@@ -216,7 +217,8 @@ public class ElementTests extends BaseTests {
         Assertions.assertThatThrownBy(() -> overlapPage.searchButton.waitToBeClickable(3).click())
                 .isInstanceOf(WebDriverException.class)
                 .hasMessageContaining("is not clickable at point")
-                .hasMessageContaining("Other element would receive the click");
+                .hasMessageContaining("because another element")
+                .hasMessageContaining("obscures it");
     }
 
     @Test

@@ -52,6 +52,6 @@ public class BrowserTypeTests {
         }
         Browser browser = Browser.newLocalDriver(name);
         browser.get("https://google.com");
-        Browser.close(browser);
+        browser.quit();
     }
 }
