@@ -138,7 +138,7 @@ public class Browser implements WebDriver {
             url = new URL(remoteHubUrl);
             return newRemoteDriver(url, browserType);
         } catch (MalformedURLException ex) {
-            throw new AssertionError("Invalid remote hub url: " + remoteHubUrl);
+            throw new IllegalArgumentException("Invalid remote hub url: " + remoteHubUrl);
         }
     }
 
@@ -171,17 +171,24 @@ public class Browser implements WebDriver {
             case EDGE:
                 return new EdgeOptions();
             case CHROME_HEADLESS:
-                ChromeOptions chromeOptions = new ChromeOptions();
+                ChromeOptions chromeOptions = getDefaultChromeOptions();
                 chromeOptions.addArguments("--headless", "--disable-gpu");
-                chromeOptions.setPageLoadTimeout(Duration.ofSeconds(DEFAULT_PAGELOAD_WAIT));
-                System.setProperty("webdriver.chrome.args", "--disable-logging");
-                System.setProperty("webdriver.chrome.silentOutput", "true");
                 return chromeOptions;
             case UNKNOWN:
             case CHROME:
             default:
-                return new ChromeOptions();
+                return getDefaultChromeOptions();
         }
+    }
+
+    public static ChromeOptions getDefaultChromeOptions() {
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.setPageLoadTimeout(Duration.ofSeconds(DEFAULT_PAGELOAD_WAIT));
+        System.setProperty("webdriver.chrome.args", "--disable-logging");
+        System.setProperty("webdriver.chrome.silentOutput", "true");
+        return options;
     }
 
     public enum ArchType {
@@ -434,7 +441,7 @@ public class Browser implements WebDriver {
         return executeAsyncScript(String.format(Utilities.JQUERY_LOADER_SCRIPT, version));
     }
 
-    public void destroy() {
+    public static void destroy() {
         try {
             driver().close();
         } catch (Exception ignore) {

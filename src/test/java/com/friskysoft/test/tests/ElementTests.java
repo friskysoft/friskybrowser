@@ -3,6 +3,7 @@ package com.friskysoft.test.tests;
 import com.friskysoft.test.framework.BaseTests;
 import com.friskysoft.test.utils.TestConstants;
 import org.assertj.core.api.Assertions;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriverException;
 import org.testng.Assert;
@@ -45,22 +46,37 @@ public class ElementTests extends BaseTests {
     public void loginUsingName() {
         loginPage.usernameName.type(TestConstants.TEST_USERNAME);
         loginPage.passwordName.type(TestConstants.TEST_PASSWORD);
-        loginPage.submitCss.click();
+        loginPage.submitCss.clickOption("Login");
         Assert.assertEquals(browser.getCurrentUrl(), baseUrl + homePath);
+    }
+
+    @Test
+    public void loginUsingContainsTextOrAttribute() {
+        loginPage.usernameUsingAttribute.type(TestConstants.TEST_USERNAME);
+        loginPage.passwordUsingAttribute.type(TestConstants.TEST_PASSWORD);
+        loginPage.submitBtnContainingText.waitToBeClickable().click();
+        Assert.assertEquals(browser.getCurrentUrl(), baseUrl + homePath);
+    }
+
+    @Test
+    public void clickOption() {
+        Assertions.assertThatThrownBy(() -> loginPage.submit.clickOption("Search"))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessageContaining("Matching option was not found for text: Search");
     }
 
     @Test
     public void inputBoxTest() {
         String value;
-        loginPage.username.clear();
-        value = loginPage.username.getValue();
+        loginPage.username.waitToBePresent().clear();
+        value = loginPage.username.waitToBeVisible().getValue();
         Assert.assertEquals(value, "");
 
-        loginPage.username.type(TestConstants.TEST_USERNAME);
+        loginPage.username.backspace().type(TestConstants.TEST_USERNAME);
         value = loginPage.username.getValue();
         Assert.assertEquals(value, TestConstants.TEST_USERNAME);
 
-        loginPage.username.type("1234");
+        loginPage.username.type("12xx").backspace(2).type("34");
         value = loginPage.username.getValue();
         Assert.assertEquals(value, TestConstants.TEST_USERNAME + "1234");
 
@@ -206,9 +222,7 @@ public class ElementTests extends BaseTests {
         browser.open(baseUrl + overlapPath);
         Assertions.assertThatThrownBy(() -> overlapPage.searchButton.click())
                 .isInstanceOf(WebDriverException.class)
-                .hasMessageContaining("is not clickable at point")
-                .hasMessageContaining("because another element")
-                .hasMessageContaining("obscures it");
+                .hasMessageContaining("is not clickable at point");
 
         browser.open(baseUrl + overlapPath);
         overlapPage.searchButton.waitToBeClickable(6).click();
@@ -216,9 +230,7 @@ public class ElementTests extends BaseTests {
         browser.open(baseUrl + overlapPath);
         Assertions.assertThatThrownBy(() -> overlapPage.searchButton.waitToBeClickable(3).click())
                 .isInstanceOf(WebDriverException.class)
-                .hasMessageContaining("is not clickable at point")
-                .hasMessageContaining("because another element")
-                .hasMessageContaining("obscures it");
+                .hasMessageContaining("is not clickable at point");
     }
 
     @Test

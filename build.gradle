@@ -3,12 +3,14 @@ group 'com.friskysoft'
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
+apply plugin: 'jacoco'
 
-project.version = '3.0.0'
+project.version = '3.0.0-SNAPSHOT'
 
 def oss = project.hasProperty('oss')
 def release = project.hasProperty('release')
-def artifactVersion = release ? project.version : "${project.version}-SNAPSHOT"
+def releaseVersion = project.version.split("-")[0]
+def artifactVersion = release ? releaseVersion : "${releaseVersion}-SNAPSHOT"
 def scmUrl = "https://github.com/friskysoft/friskybrowser"
 def ossRepoUsername = project.hasProperty('ossrhUsername') ? ossrhUsername : ""
 def ossRepoPassword = project.hasProperty('ossrhPassword') ? ossrhPassword : ""
@@ -73,6 +75,21 @@ test {
             println "\nResults: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
         }
     }
+
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion = "0.8.9"
+    reportsDirectory = layout.buildDirectory.dir('jacoco')
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacoco/html')
+    }
 }
 
 tasks.withType(Jar).configureEach {
@@ -110,7 +127,7 @@ publishing {
 
     println("* Artifacts:")
     configurations.archives.allArtifacts.each { arc ->
-        println('-- ' + arc.file)
+        println('  - ' + arc.file)
     }
 
     if (oss && release) {
@@ -124,9 +141,11 @@ publishing {
     repositories {
         maven {
             url = mavenRepo
-            credentials {
-                username ossRepoUsername
-                password ossRepoPassword
+            if (oss) {
+                credentials {
+                    username ossRepoUsername
+                    password ossRepoPassword
+                }
             }
         }
     }

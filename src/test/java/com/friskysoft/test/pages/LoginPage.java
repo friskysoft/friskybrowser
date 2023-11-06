@@ -23,6 +23,10 @@ public class LoginPage {
     public Element passwordXpath = new Element("(//input[@name='password'])[1]");
     public Element submitXpath = Element.findUsingXpath("//*[@id='submit-button']//button");
 
+    public Element usernameUsingAttribute = Element.findUsingAttribute("data_test", "user_box");
+    public Element passwordUsingAttribute = Element.findUsingAttribute("input", "data_test", "pw_box");
+    public Element submitBtnContainingText = Element.findContainingText("button", "Login");
+
     public Element usernameId = new Element(By.id("username"));
     public Element passwordId = new Element("id=password");
 

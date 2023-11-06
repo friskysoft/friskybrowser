@@ -2,6 +2,9 @@ package com.friskysoft.test.tests;
 
 import com.friskysoft.framework.Browser;
 import com.friskysoft.framework.BrowserType;
+import com.friskysoft.framework.utils.GifRecorder;
+import org.testng.ITestResult;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -53,5 +56,10 @@ public class BrowserTypeTests {
         Browser browser = Browser.newLocalDriver(name);
         browser.get("https://google.com");
         browser.quit();
+    }
+
+    @AfterMethod
+    public void afterMethod(ITestResult result) {
+        Browser.destroy();
     }
 }

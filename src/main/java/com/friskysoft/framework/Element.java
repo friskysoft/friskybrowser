@@ -3,6 +3,7 @@ package com.friskysoft.framework;
 import com.assertthat.selenium_shutterbug.core.CaptureElement;
 import com.assertthat.selenium_shutterbug.core.Shutterbug;
 import com.friskysoft.framework.utils.Utilities;
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
@@ -64,6 +65,10 @@ public class Element {
         }
     }
 
+    public static Element find(String locator) {
+        return findUsing(locator);
+    }
+
     public static Element findUsing(String locator) {
         return new Element(locator);
     }
@@ -86,6 +91,22 @@ public class Element {
 
     public static Element findUsingLinkText(String linkText) {
         return new Element(By.linkText(linkText));
+    }
+
+    public static Element findContainingText(String text) {
+        return Element.findContainingText("*", text);
+    }
+
+    public static Element findContainingText(String tag, String text) {
+        return Element.findUsingXpath(String.format("//%s[contains(text(),'%s')]", tag, text));
+    }
+
+    public static Element findUsingAttribute(String attribute, String attributeValue) {
+        return Element.findUsingCss(String.format("[%s='%s']", attribute, attributeValue));
+    }
+
+    public static Element findUsingAttribute(String tag, String attribute, String attributeValue) {
+        return Element.findUsingCss(String.format("%s[%s='%s']", tag, attribute, attributeValue));
     }
 
     public Element(By by) {
@@ -359,6 +380,27 @@ public class Element {
     public Element selectByValue(String value) {
         LOGGER.info("Select option by value <" + value + "> from: " + this);
         getSelectElement().selectByValue(value);
+        return this;
+    }
+
+    public Element clickOption(String text) {
+        List<Element> options = this.getAll();
+        for (Element option : options) {
+            String optionText = option.getText().trim();
+            LOGGER.info("Option [" + optionText + "]");
+            if (StringUtils.equalsIgnoreCase(optionText, text)) {
+                return option.scrollIntoView().click();
+            }
+        }
+        throw new NoSuchElementException("Matching option was not found for text: " + text);
+    }
+
+    public Element clickIfPresent() {
+        try {
+            this.waitToBeClickable(1).click();
+        } catch (Exception ex) {
+            //ignore
+        }
         return this;
     }
 

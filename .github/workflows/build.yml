@@ -46,3 +46,19 @@ jobs:
           name: Test Report
           path: build/test-results/test/*.xml
           reporter: java-junit
+
+      - name: Code Coverage
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.6.1
+        with:
+          paths: |
+            build/reports/jacoco/test.exec
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 60
+          min-coverage-changed-files: 60
+
+      - name: Archive Libs
+        uses: actions/upload-artifact@v3
+        with:
+          name: libs
+          path: build/libs
