@@ -33,9 +33,10 @@ public class LoginPage {
     public Element usernameName = Element.findUsingName("username");
     public Element passwordName = Element.findUsing("name=password");
 
-    public Element flashMessage = new Element("#flash-message");
+    public Element flashMessage = Element.find("#flash-message");
 
     public Element notPresentElement = new Element("#not-present");
+    public Element disabledElement = new Element("#disabled-button button");
 
     public LoginPage login(String username, String password) {
         this.username.clear().type(username);

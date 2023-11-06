@@ -10,6 +10,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.concurrent.TimeUnit;
+
 public class BrowserTests extends BaseTests {
 
     @BeforeMethod
@@ -121,6 +123,8 @@ public class BrowserTests extends BaseTests {
 
         browser.switchToTopWindow();
         loginPage.username.sendKeys("foo");
+
+        browser.acceptAlertIfExists();
     }
 
     @Test
@@ -131,6 +135,7 @@ public class BrowserTests extends BaseTests {
 
     @Test
     public void webdriverMethods() {
+        browser.setScriptTimeout(10, TimeUnit.SECONDS);
         browser.refresh();
         browser.fullscreen();
         browser.get("https://google.com");
@@ -141,6 +146,8 @@ public class BrowserTests extends BaseTests {
         browser.forward();
         Assertions.assertThat(browser.getTitle()).containsIgnoringCase("java");
         browser.getPageSource();
+        browser.navigate().refresh();
+        browser.takeScreenshot("build/tmp/test.png");
     }
 
     @Test

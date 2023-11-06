@@ -4,7 +4,7 @@ import com.friskysoft.framework.Element;
 
 public class HoverPage {
 
-    public Element parent = Element.findUsingId("parent");
-    public Element popup = Element.findUsingCss("#parent #popup");
+    public Element parent = Element.find("id=parent");
+    public Element popup = Element.find("xpath=//*[@id='parent']//*[@id='popup']");
 
 }

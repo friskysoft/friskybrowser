@@ -614,6 +614,48 @@ public class Element {
         return this;
     }
 
+    public Element assertPresent() {
+        Assertions.assertThat(this.isPresent())
+                .withFailMessage("Element expected to be present but not: " + this)
+                .isTrue();
+        return this;
+    }
+
+    public Element assertNotPresent() {
+        Assertions.assertThat(this.isPresent())
+                .withFailMessage("Element expected to be not present but not: " + this)
+                .isFalse();
+        return this;
+    }
+
+    public Element assertVisible() {
+        Assertions.assertThat(this.isDisplayed())
+                .withFailMessage("Element expected to be visible but not: " + this)
+                .isTrue();
+        return this;
+    }
+
+    public Element assertNotVisible() {
+        Assertions.assertThat(this.isDisplayed())
+                .withFailMessage("Element expected to be not visible but not: " + this)
+                .isFalse();
+        return this;
+    }
+
+    public Element assertEnabled() {
+        Assertions.assertThat(this.isEnabled())
+                .withFailMessage("Element expected to be enabled but not: " + this)
+                .isTrue();
+        return this;
+    }
+
+    public Element assertDisabled() {
+        Assertions.assertThat(this.isEnabled())
+                .withFailMessage("Element expected to be disabled but not: " + this)
+                .isFalse();
+        return this;
+    }
+
     public Element assertTextIsEqualTo(String expected) {
         return assertTextIsEqualTo(expected, true);
     }
@@ -636,6 +678,32 @@ public class Element {
             Assertions.assertThat(this.getText()).as("Text from " + this).contains(expectedSubString);
         } else {
             Assertions.assertThat(this.getText()).as("Text from " + this).containsIgnoringCase(expectedSubString);
+        }
+        return this;
+    }
+
+    public Element assertValueIsEqualTo(String expectedSubString) {
+        return assertValueIsEqualTo(expectedSubString, true);
+    }
+
+    public Element assertValueIsEqualTo(String expected, boolean matchCase) {
+        if (matchCase) {
+            Assertions.assertThat(this.getValue()).as("Value from " + this).isEqualTo(expected);
+        } else {
+            Assertions.assertThat(this.getValue()).as("Value from " + this).isEqualToIgnoringCase(expected);
+        }
+        return this;
+    }
+
+    public Element assertValueContainsString(String expectedSubString) {
+        return assertValueContainsString(expectedSubString, true);
+    }
+
+    public Element assertValueContainsString(String expectedSubString, boolean matchCase) {
+        if (matchCase) {
+            Assertions.assertThat(this.getValue()).as("Value from " + this).contains(expectedSubString);
+        } else {
+            Assertions.assertThat(this.getValue()).as("Value from " + this).containsIgnoringCase(expectedSubString);
         }
         return this;
     }
