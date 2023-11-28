@@ -3,6 +3,7 @@ package com.friskysoft.test.tests;
 import com.friskysoft.test.framework.BaseTests;
 import com.friskysoft.test.utils.TestConstants;
 import org.assertj.core.api.Assertions;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriverException;
 import org.testng.Assert;
@@ -45,24 +46,40 @@ public class ElementTests extends BaseTests {
     public void loginUsingName() {
         loginPage.usernameName.type(TestConstants.TEST_USERNAME);
         loginPage.passwordName.type(TestConstants.TEST_PASSWORD);
-        loginPage.submitCss.click();
+        loginPage.submitCss.clickOption("Login");
         Assert.assertEquals(browser.getCurrentUrl(), baseUrl + homePath);
+    }
+
+    @Test
+    public void loginUsingContainsTextOrAttribute() {
+        loginPage.usernameUsingAttribute.type(TestConstants.TEST_USERNAME);
+        loginPage.passwordUsingAttribute.type(TestConstants.TEST_PASSWORD);
+        loginPage.submitBtnContainingText.waitToBeClickable().click();
+        Assert.assertEquals(browser.getCurrentUrl(), baseUrl + homePath);
+    }
+
+    @Test
+    public void clickOption() {
+        Assertions.assertThatThrownBy(() -> loginPage.submit.clickOption("Search"))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessageContaining("Matching option was not found for text: Search");
     }
 
     @Test
     public void inputBoxTest() {
         String value;
-        loginPage.username.clear();
-        value = loginPage.username.getValue();
+        loginPage.username.waitToBePresent().clear();
+        value = loginPage.username.waitToBeVisible().getValue();
         Assert.assertEquals(value, "");
 
-        loginPage.username.type(TestConstants.TEST_USERNAME);
+        loginPage.username.backspace().type(TestConstants.TEST_USERNAME);
         value = loginPage.username.getValue();
         Assert.assertEquals(value, TestConstants.TEST_USERNAME);
 
-        loginPage.username.type("1234");
+        loginPage.username.type("12xx").backspace(2).type("345");
         value = loginPage.username.getValue();
-        Assert.assertEquals(value, TestConstants.TEST_USERNAME + "1234");
+        Assert.assertEquals(value, TestConstants.TEST_USERNAME + "12345");
+        loginPage.username.assertValueIsEqualTo(TestConstants.TEST_USERNAME + "12345");
 
         loginPage.username.clear();
         value = loginPage.username.getValue();
@@ -71,6 +88,7 @@ public class ElementTests extends BaseTests {
         loginPage.username.sendKeys("ab", 3).backspace(3).sendKeys("xy", 2);
         value = loginPage.username.getValue();
         Assert.assertEquals(value, "abaxyxy");
+        loginPage.username.assertValueContainsString("axy");
     }
 
     @Test
@@ -108,18 +126,32 @@ public class ElementTests extends BaseTests {
     public void elementScreenshot() {
         Assert.assertTrue(loginPage.form.isDisplayed());
         loginPage.form.takeScreenshot();
+        loginPage.form.takeScreenshot("build/tmp/element.png");
     }
 
     @Test
     public void hiddenElement() {
         Assert.assertFalse(loginPage.flashMessage.isDisplayed());
+        loginPage.flashMessage.assertNotVisible();
+        loginPage.flashMessage.assertNotPresent();
         loginPage.login("abc", "123");
         Assert.assertTrue(loginPage.flashMessage.isDisplayed());
+        loginPage.flashMessage.assertVisible();
+        loginPage.flashMessage.assertPresent();
+    }
+
+    @Test
+    public void disabledElement() {
+        Assert.assertFalse(loginPage.disabledElement.isEnabled());
+        loginPage.disabledElement.assertPresent();
+        loginPage.disabledElement.assertVisible();
+        loginPage.disabledElement.assertDisabled();
     }
 
     @Test
     public void invalidElement() {
         Assert.assertFalse(loginPage.notPresentElement.isDisplayed());
+        loginPage.notPresentElement.assertNotPresent();
         try {
             loginPage.notPresentElement.waitToBePresent(2);
             Assert.fail("TimeoutException expected");
@@ -142,7 +174,7 @@ public class ElementTests extends BaseTests {
 
     @DataProvider
     public Object[][] dropdownData() {
-        return new Object[][] {
+        return new Object[][]{
                 {0, "Camera", "cmr"},
                 {1, "Laptop", "lpt"},
                 {2, "Tablet", "tab"},
@@ -153,6 +185,8 @@ public class ElementTests extends BaseTests {
     @Test(dataProvider = "dropdownData")
     public void selectFromDropdownByIndex(int index, String text, String value) {
         loginPage.login();
+
+        Assertions.assertThat(homePage.categoryDropdownOptions.count()).isEqualTo(4);
         homePage.categoryDropdown.selectByIndex(index);
         Assert.assertEquals(homePage.categoryDropdown.getValue(), value);
         Assert.assertEquals(homePage.categoryDropdown.getSelectedOption().getText(), text);
@@ -184,6 +218,7 @@ public class ElementTests extends BaseTests {
         }).isInstanceOf(TimeoutException.class).hasMessageContaining("waiting for visibility of element located by " + homePage.searchResult.getBy());
 
         homePage.searchResult.waitToBeVisible(10);
+        homePage.searchResult.assertEnabled();
     }
 
     @Test
@@ -191,7 +226,7 @@ public class ElementTests extends BaseTests {
         loginPage.login();
         homePage.searchBox.sendKeys("foo");
         homePage.searchButton.click();
-        homePage.spinner.waitToBeVisible(5).waitToBeInvisible(10);
+        homePage.spinner.waitToBeVisible(5).waitToBeInvisible();
 
         homePage.searchButton.click();
         Assertions.assertThatThrownBy(() -> {
@@ -206,17 +241,17 @@ public class ElementTests extends BaseTests {
         browser.open(baseUrl + overlapPath);
         Assertions.assertThatThrownBy(() -> overlapPage.searchButton.click())
                 .isInstanceOf(WebDriverException.class)
-                .hasMessageContaining("is not clickable at point")
-                .hasMessageContaining("Other element would receive the click");
+                .hasMessageContaining("is not clickable at point");
 
         browser.open(baseUrl + overlapPath);
+        overlapPage.buttonBlocker.clickIfPresent();
         overlapPage.searchButton.waitToBeClickable(6).click();
+        overlapPage.buttonBlocker.clickIfPresent();
 
         browser.open(baseUrl + overlapPath);
         Assertions.assertThatThrownBy(() -> overlapPage.searchButton.waitToBeClickable(3).click())
                 .isInstanceOf(WebDriverException.class)
-                .hasMessageContaining("is not clickable at point")
-                .hasMessageContaining("Other element would receive the click");
+                .hasMessageContaining("is not clickable at point");
     }
 
     @Test
@@ -237,5 +272,22 @@ public class ElementTests extends BaseTests {
         loginPage.submit.rightClick();
         loginPage.submit.hover();
         loginPage.submit.triggerClick();
+    }
+
+    @Test
+    public void elementMethods() {
+        Assertions.assertThat(loginPage.submit.getTagName()).isEqualTo("button");
+        Assertions.assertThat(loginPage.submit.getAttribute("onclick")).isEqualTo("login()");
+        Assertions.assertThat(loginPage.submit.getSrc()).isNullOrEmpty();
+        Assertions.assertThat(loginPage.submit.getLink()).isNullOrEmpty();
+        Assertions.assertThat(loginPage.submit.isSelected()).isFalse();
+        Assertions.assertThat(loginPage.submit.getLocation()).isNotNull();
+        Assertions.assertThat(loginPage.submit.getSize()).isNotNull();
+        Assertions.assertThat(loginPage.submit.getRect()).isNotNull();
+        Assertions.assertThat(loginPage.submit.getCssValue("button")).isNotNull();
+        Assertions.assertThat(loginPage.submit.getFirst()).isNotNull();
+        Assertions.assertThat(loginPage.submit.getLast()).isNotNull();
+        Assertions.assertThat(loginPage.submit.getNth(0)).isNotNull();
+        Assertions.assertThat(loginPage.submit.getParentFrame()).isNull();
     }
 }

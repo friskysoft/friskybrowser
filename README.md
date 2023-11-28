@@ -1,6 +1,6 @@
 # Frisky-Browser
 
-[![Build Status](https://travis-ci.com/friskysoft/friskybrowser.svg?branch=master)](https://travis-ci.com/friskysoft/friskybrowser/builds)
+[![Build Status](https://github.com/friskysoft/friskybrowser/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/friskysoft/friskybrowser/actions?query=branch%3Amain)
 [![Maven Central](https://img.shields.io/maven-central/v/com.friskysoft/friskybrowser.svg?label=Maven%20Central)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.friskysoft%22%20a%3A%22friskybrowser%22)
 
 📦 **Frisky-Browser** is a java wrapper library created on top of **Selenium Webdriver**. You can use **Frisky-Browser** features with your existing webdriver tests, or you can set up a new one within a matter of minutes. **Frisky-Browser** uses a thread static webdriver under the hood, so you can run parallel tests without any conflicts (with the assumption that each test is using a single thread).
@@ -9,7 +9,7 @@
 
 - Gradle:
 
-        implementation 'com.friskysoft:friskybrowser:2.2.0'
+        implementation 'com.friskysoft:friskybrowser:3.0.0'
 
 - Maven:
 
@@ -20,8 +20,8 @@
         </dependency>
 
 ### Requirements
-- Java 8 or above.
-- Selenium 3 or above (downloaded automatically when you use maven or gradle or a similar dependency management tool).
+- Java 11 or above.
+- Selenium 4 or above (downloaded automatically when you use maven or gradle or a similar dependency management tool).
 
 ### Features
 #### Simple and flexible element constructors
@@ -46,7 +46,7 @@ public class LoginPage {
 ```java
 LoginPage loginPage = new LoginPage();
 ```
-#### Chainable actions for an element
+#### Chainable actions for an element using fluent interface
 - Reduce the line of codes by chaining actions on the same element
     ```java
     loginPage.username.waitToBeVisible().clear().sendKeys("rafaat");
@@ -112,7 +112,7 @@ browser.executeAsyncScript(script);
 @Test
 public void loginTest() {
 
-    Browser browser = Browser.newLocalDriver(BrowserType.CHROME)
+    Browser browser = Browser.newLocalDriver("chrome")
                              .setPageLoadTimeout(30, TimeUnit.SECONDS)
                              .setImplicitWait(5, TimeUnit.SECONDS);
 

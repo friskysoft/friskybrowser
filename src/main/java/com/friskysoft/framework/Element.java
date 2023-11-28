@@ -3,6 +3,7 @@ package com.friskysoft.framework;
 import com.assertthat.selenium_shutterbug.core.CaptureElement;
 import com.assertthat.selenium_shutterbug.core.Shutterbug;
 import com.friskysoft.framework.utils.Utilities;
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
@@ -14,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -63,6 +65,26 @@ public class Element {
         }
     }
 
+    private static String normalizeXpath(String xpath) {
+        if (xpath == null) {
+            return null;
+        }
+        xpath = xpath.trim();
+        if (xpath.startsWith("/")) {
+            return xpath;
+        } else {
+            return "//" + xpath;
+        }
+    }
+
+    public static Element find(String locator) {
+        return findUsing(locator);
+    }
+
+    public static Element find(XPath xPath) {
+        return findUsingXpath(xPath.build());
+    }
+
     public static Element findUsing(String locator) {
         return new Element(locator);
     }
@@ -85,6 +107,34 @@ public class Element {
 
     public static Element findUsingLinkText(String linkText) {
         return new Element(By.linkText(linkText));
+    }
+
+    public static Element findContainingText(String text) {
+        return Element.findContainingText("*", text);
+    }
+
+    public static Element findContainingText(String tagPrefix, String text) {
+        return Element.findUsingXpath(String.format("%s[contains(text(),'%s')]", normalizeXpath(tagPrefix), text));
+    }
+
+    public static Element findWithText(String text) {
+        return Element.findWithText("*", text);
+    }
+
+    public static Element findWithText(String tagPrefix, String text) {
+        return Element.findUsingXpath(String.format("%s[text()='%s']", normalizeXpath(tagPrefix), text));
+    }
+
+    public static Element findUsingAttribute(String attribute, String attributeValue) {
+        return Element.findUsingCss(String.format("[%s='%s']", attribute, attributeValue));
+    }
+
+    public static Element findUsingAttribute(String tag, String attribute, String attributeValue) {
+        return Element.findUsingCss(String.format("%s[%s='%s']", tag, attribute, attributeValue));
+    }
+
+    public static Element findButton(String text) {
+        return findContainingText("button", text);
     }
 
     public Element(By by) {
@@ -262,7 +312,7 @@ public class Element {
 
     public Element waitToBeVisible(int timeOutInSeconds) {
         LOGGER.info("Waiting for element to be visible: " + this);
-        run(() -> new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.visibilityOfElementLocated(wrappedBy)));
+        run(() -> new WebDriverWait(driver(), Duration.ofSeconds(timeOutInSeconds)).until(ExpectedConditions.visibilityOfElementLocated(wrappedBy)));
         return this;
     }
 
@@ -272,7 +322,7 @@ public class Element {
 
     public Element waitToBePresent(int timeOutInSeconds) {
         LOGGER.info("Waiting for element to be present: " + this);
-        run(() -> new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.presenceOfElementLocated(wrappedBy)));
+        run(() -> new WebDriverWait(driver(), Duration.ofSeconds(timeOutInSeconds)).until(ExpectedConditions.presenceOfElementLocated(wrappedBy)));
         return this;
     }
 
@@ -283,7 +333,7 @@ public class Element {
     public Element waitToBeClickable(int timeOutInSeconds) {
         waitToBeClickable = timeOutInSeconds;
         LOGGER.info("Waiting for element to be clickable: " + this);
-        run(() -> new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.elementToBeClickable(wrappedBy)));
+        run(() -> new WebDriverWait(driver(), Duration.ofSeconds(timeOutInSeconds)).until(ExpectedConditions.elementToBeClickable(wrappedBy)));
         return this;
     }
 
@@ -293,7 +343,7 @@ public class Element {
 
     public Element waitToBeInvisible(int timeOutInSeconds) {
         LOGGER.info("Waiting for element to disappear: " + this);
-        run(() -> new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.invisibilityOfElementLocated(wrappedBy)));
+        run(() -> new WebDriverWait(driver(), Duration.ofSeconds(timeOutInSeconds)).until(ExpectedConditions.invisibilityOfElementLocated(wrappedBy)));
         return this;
     }
 
@@ -361,6 +411,27 @@ public class Element {
         return this;
     }
 
+    public Element clickOption(String text) {
+        List<Element> options = this.getAll();
+        for (Element option : options) {
+            String optionText = option.getText().trim();
+            LOGGER.info("Option [" + optionText + "]");
+            if (StringUtils.equalsIgnoreCase(optionText, text)) {
+                return option.scrollIntoView().click();
+            }
+        }
+        throw new NoSuchElementException("Matching option was not found for text: " + text);
+    }
+
+    public Element clickIfPresent() {
+        try {
+            this.waitToBeClickable(1).click();
+        } catch (Exception ex) {
+            //ignore
+        }
+        return this;
+    }
+
     public String getTagName() {
         return getWebElement().getTagName();
     }
@@ -407,7 +478,7 @@ public class Element {
 
     public boolean isDisplayed() {
         try {
-            Wait<WebDriver> wait = new WebDriverWait(driver(), 2);
+            Wait<WebDriver> wait = new WebDriverWait(driver(), Duration.ofSeconds(2));
             wait.until(ExpectedConditions.visibilityOf(getWebElement()));
             return true;
         } catch (Throwable tr) {
@@ -571,6 +642,48 @@ public class Element {
         return this;
     }
 
+    public Element assertPresent() {
+        Assertions.assertThat(this.isPresent())
+                .withFailMessage("Element expected to be present but not: " + this)
+                .isTrue();
+        return this;
+    }
+
+    public Element assertNotPresent() {
+        Assertions.assertThat(this.isPresent())
+                .withFailMessage("Element expected to be not present but not: " + this)
+                .isFalse();
+        return this;
+    }
+
+    public Element assertVisible() {
+        Assertions.assertThat(this.isDisplayed())
+                .withFailMessage("Element expected to be visible but not: " + this)
+                .isTrue();
+        return this;
+    }
+
+    public Element assertNotVisible() {
+        Assertions.assertThat(this.isDisplayed())
+                .withFailMessage("Element expected to be not visible but not: " + this)
+                .isFalse();
+        return this;
+    }
+
+    public Element assertEnabled() {
+        Assertions.assertThat(this.isEnabled())
+                .withFailMessage("Element expected to be enabled but not: " + this)
+                .isTrue();
+        return this;
+    }
+
+    public Element assertDisabled() {
+        Assertions.assertThat(this.isEnabled())
+                .withFailMessage("Element expected to be disabled but not: " + this)
+                .isFalse();
+        return this;
+    }
+
     public Element assertTextIsEqualTo(String expected) {
         return assertTextIsEqualTo(expected, true);
     }
@@ -593,6 +706,32 @@ public class Element {
             Assertions.assertThat(this.getText()).as("Text from " + this).contains(expectedSubString);
         } else {
             Assertions.assertThat(this.getText()).as("Text from " + this).containsIgnoringCase(expectedSubString);
+        }
+        return this;
+    }
+
+    public Element assertValueIsEqualTo(String expectedSubString) {
+        return assertValueIsEqualTo(expectedSubString, true);
+    }
+
+    public Element assertValueIsEqualTo(String expected, boolean matchCase) {
+        if (matchCase) {
+            Assertions.assertThat(this.getValue()).as("Value from " + this).isEqualTo(expected);
+        } else {
+            Assertions.assertThat(this.getValue()).as("Value from " + this).isEqualToIgnoringCase(expected);
+        }
+        return this;
+    }
+
+    public Element assertValueContainsString(String expectedSubString) {
+        return assertValueContainsString(expectedSubString, true);
+    }
+
+    public Element assertValueContainsString(String expectedSubString, boolean matchCase) {
+        if (matchCase) {
+            Assertions.assertThat(this.getValue()).as("Value from " + this).contains(expectedSubString);
+        } else {
+            Assertions.assertThat(this.getValue()).as("Value from " + this).containsIgnoringCase(expectedSubString);
         }
         return this;
     }

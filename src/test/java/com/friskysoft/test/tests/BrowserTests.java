@@ -4,10 +4,13 @@ import com.friskysoft.framework.Browser;
 import com.friskysoft.test.framework.BaseTests;
 import com.friskysoft.test.utils.TestConstants;
 import org.assertj.core.api.Assertions;
-import org.openqa.selenium.UnhandledAlertException;
+import org.openqa.selenium.By;
+import org.openqa.selenium.SessionNotCreatedException;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.util.concurrent.TimeUnit;
 
 public class BrowserTests extends BaseTests {
 
@@ -120,5 +123,50 @@ public class BrowserTests extends BaseTests {
 
         browser.switchToTopWindow();
         loginPage.username.sendKeys("foo");
+
+        browser.acceptAlertIfExists();
+    }
+
+    @Test
+    public void staticMethods() {
+        Browser.getDefaultVideoFileName();
+        Browser.getArchType();
+    }
+
+    @Test
+    public void webdriverMethods() {
+        browser.setScriptTimeout(10, TimeUnit.SECONDS);
+        browser.refresh();
+        browser.fullscreen();
+        browser.get("https://google.com");
+        browser.get("https://www.google.com/search?q=java");
+        Assertions.assertThat(browser.getTitle()).containsIgnoringCase("java");
+        browser.back();
+        Assertions.assertThat(browser.getTitle()).doesNotContainIgnoringCase("java");
+        browser.forward();
+        Assertions.assertThat(browser.getTitle()).containsIgnoringCase("java");
+        browser.getPageSource();
+        browser.navigate().refresh();
+        browser.takeScreenshot("build/tmp/test.png");
+    }
+
+    @Test
+    public void webelementMethods() {
+        By html = By.tagName("html");
+        browser.get("https://google.com");
+        browser.findElement(html);
+        browser.findElements(html);
+        browser.waitForElementToBeClickable(html);
+        browser.waitForElementToBePresent(html);
+    }
+
+    @Test
+    public void remoteDriver() {
+        Assertions.assertThatThrownBy(() -> Browser.newRemoteDriver("http://localhost:4444", "chrome"))
+                .isInstanceOf(SessionNotCreatedException.class)
+                .hasMessageContaining("Could not start a new session");
+        Assertions.assertThatThrownBy(() -> Browser.newRemoteDriver("localhost", "chrome"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid remote hub url");
     }
 }
