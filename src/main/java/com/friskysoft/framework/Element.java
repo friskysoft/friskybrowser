@@ -65,8 +65,24 @@ public class Element {
         }
     }
 
+    private static String normalizeXpath(String xpath) {
+        if (xpath == null) {
+            return null;
+        }
+        xpath = xpath.trim();
+        if (xpath.startsWith("/")) {
+            return xpath;
+        } else {
+            return "//" + xpath;
+        }
+    }
+
     public static Element find(String locator) {
         return findUsing(locator);
+    }
+
+    public static Element find(XPath xPath) {
+        return findUsingXpath(xPath.build());
     }
 
     public static Element findUsing(String locator) {
@@ -97,8 +113,16 @@ public class Element {
         return Element.findContainingText("*", text);
     }
 
-    public static Element findContainingText(String tag, String text) {
-        return Element.findUsingXpath(String.format("//%s[contains(text(),'%s')]", tag, text));
+    public static Element findContainingText(String tagPrefix, String text) {
+        return Element.findUsingXpath(String.format("%s[contains(text(),'%s')]", normalizeXpath(tagPrefix), text));
+    }
+
+    public static Element findWithText(String text) {
+        return Element.findWithText("*", text);
+    }
+
+    public static Element findWithText(String tagPrefix, String text) {
+        return Element.findUsingXpath(String.format("%s[text()='%s']", normalizeXpath(tagPrefix), text));
     }
 
     public static Element findUsingAttribute(String attribute, String attributeValue) {
@@ -107,6 +131,10 @@ public class Element {
 
     public static Element findUsingAttribute(String tag, String attribute, String attributeValue) {
         return Element.findUsingCss(String.format("%s[%s='%s']", tag, attribute, attributeValue));
+    }
+
+    public static Element findButton(String text) {
+        return findContainingText("button", text);
     }
 
     public Element(By by) {

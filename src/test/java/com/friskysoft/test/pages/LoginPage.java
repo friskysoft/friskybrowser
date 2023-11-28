@@ -1,6 +1,7 @@
 package com.friskysoft.test.pages;
 
 import com.friskysoft.framework.Element;
+import com.friskysoft.framework.XPath;
 import com.friskysoft.test.utils.TestConstants;
 import org.openqa.selenium.By;
 
@@ -20,7 +21,7 @@ public class LoginPage {
     public Element submitCss = new Element("#submit-button button");
 
     public Element usernameXpath = new Element("//*[@id='username']");
-    public Element passwordXpath = new Element("(//input[@name='password'])[1]");
+    public Element passwordXpath = Element.find(XPath.any("input").withName("password"));
     public Element submitXpath = Element.findUsingXpath("//*[@id='submit-button']//button");
 
     public Element usernameUsingAttribute = Element.findUsingAttribute("data_test", "user_box");
