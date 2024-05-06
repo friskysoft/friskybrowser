@@ -4,20 +4,18 @@ import com.assertthat.selenium_shutterbug.core.Capture;
 import com.assertthat.selenium_shutterbug.core.Shutterbug;
 import com.friskysoft.framework.utils.Utilities;
 import io.github.bonigarcia.wdm.*;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerOptions;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.opera.OperaDriver;
-import org.openqa.selenium.opera.OperaOptions;
-import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.safari.SafariOptions;
@@ -31,6 +29,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -90,55 +89,42 @@ public class Browser implements WebDriver {
         return allWebdriverInstances;
     }
 
-    public static Browser newLocalDriver(String browserType) {
-        return newLocalDriver(browserType, false);
+    public static Browser newLocalDriver(String browserName) {
+        return newLocalDriver(browserName, false);
     }
 
     @SuppressWarnings("deprecation")
-    public static Browser newLocalDriver(String browserType, boolean hideChromeAutomationFeatures) {
+    public static Browser newLocalDriver(String browserName, boolean hideChromeAutomationFeatures) {
         WebDriver driver;
-        MutableCapabilities capabilities = getDefaultBrowserCapabilities(browserType);
-        switch (browserType.toLowerCase()) {
-            case BrowserType.CHROME:
-                WebDriverManager.chromedriver().setup();
-                if (hideChromeAutomationFeatures && capabilities instanceof ChromeOptions) {
-                    ((ChromeOptions) capabilities).setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
-                    ((ChromeOptions) capabilities).addArguments("--disable-blink-features=AutomationControlled");
-                }
-                driver = new ChromeDriver(capabilities);
+        BrowserType browserType = BrowserType.from(browserName);
+        MutableCapabilities options = getDefaultBrowserCapabilities(browserType);
+        if (hideChromeAutomationFeatures && options instanceof ChromeOptions) {
+            ((ChromeOptions) options).setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
+            ((ChromeOptions) options).addArguments("--disable-blink-features=AutomationControlled");
+        }
+        switch (browserType) {
+            case SAFARI:
+                WebDriverManager.safaridriver().setup();
+                driver = new SafariDriver((SafariOptions) options);
                 break;
-            case BrowserType.FIREFOX:
-                WebDriverManager.firefoxdriver().setup();
-                driver = new FirefoxDriver(capabilities);
-                break;
-            case BrowserType.SAFARI:
-                driver = new SafariDriver(capabilities);
-                break;
-            case BrowserType.OPERA:
-            case BrowserType.OPERA_BLINK:
-                WebDriverManager.operadriver().setup();
-                driver = new OperaDriver(capabilities);
-                break;
-            case BrowserType.IE:
+            case IE:
                 WebDriverManager.iedriver().setup();
-                driver = new InternetExplorerDriver(capabilities);
+                driver = new InternetExplorerDriver((InternetExplorerOptions) options);
                 break;
-            case BrowserType.EDGE:
+            case EDGE:
                 WebDriverManager.edgedriver().setup();
-                driver = new EdgeDriver(capabilities);
+                driver = new EdgeDriver((EdgeOptions) options);
                 break;
-            case BrowserType.HTMLUNIT:
-            case "headless":
+            case FIREFOX:
+            case FIREFOX_HEADLESS:
+                WebDriverManager.firefoxdriver().setup();
+                driver = new FirefoxDriver((FirefoxOptions) options);
+                break;
+            case CHROME:
+            case CHROME_HEADLESS:
             default:
                 WebDriverManager.chromedriver().setup();
-                ChromeOptions chromeOptions = new ChromeOptions();
-                if (capabilities instanceof ChromeOptions) {
-                    chromeOptions = (ChromeOptions) capabilities;
-                }
-                chromeOptions.addArguments("--headless", "--disable-gpu");
-                System.setProperty("webdriver.chrome.args", "--disable-logging");
-                System.setProperty("webdriver.chrome.silentOutput", "true");
-                driver = new ChromeDriver(chromeOptions);
+                driver = new ChromeDriver((ChromeOptions) options);
                 break;
         }
         driver.manage().timeouts().implicitlyWait(DEFAULT_IMPLICIT_WAIT, TimeUnit.SECONDS);
@@ -152,7 +138,7 @@ public class Browser implements WebDriver {
             url = new URL(remoteHubUrl);
             return newRemoteDriver(url, browserType);
         } catch (MalformedURLException ex) {
-            throw new AssertionError("Invalid remote hub url: " + remoteHubUrl);
+            throw new IllegalArgumentException("Invalid remote hub url: " + remoteHubUrl);
         }
     }
 
@@ -165,25 +151,44 @@ public class Browser implements WebDriver {
         return setWebDriver(remoteDriver);
     }
 
-    private static MutableCapabilities getDefaultBrowserCapabilities(String browserType) {
-        switch (browserType.toLowerCase()) {
-            case BrowserType.FIREFOX:
+    public static MutableCapabilities getDefaultBrowserCapabilities(String browserType) {
+        return getDefaultBrowserCapabilities(BrowserType.from(browserType));
+    }
+
+    public static MutableCapabilities getDefaultBrowserCapabilities(BrowserType browserType) {
+        switch (browserType) {
+            case FIREFOX:
                 return new FirefoxOptions();
-            case BrowserType.SAFARI:
+            case FIREFOX_HEADLESS:
+                FirefoxOptions ffOptions = new FirefoxOptions();
+                ffOptions.addArguments("--headless");
+                ffOptions.setLogLevel(FirefoxDriverLogLevel.FATAL);
+                return ffOptions;
+            case SAFARI:
                 return new SafariOptions();
-            case BrowserType.OPERA:
-            case BrowserType.OPERA_BLINK:
-                return new OperaOptions();
-            case BrowserType.IE:
+            case IE:
                 return new InternetExplorerOptions();
-            case BrowserType.EDGE:
+            case EDGE:
                 return new EdgeOptions();
-            case BrowserType.HTMLUNIT:
-            case BrowserType.CHROME:
-            case "headless":
+            case CHROME_HEADLESS:
+                ChromeOptions chromeOptions = getDefaultChromeOptions();
+                chromeOptions.addArguments("--headless", "--disable-gpu");
+                return chromeOptions;
+            case UNKNOWN:
+            case CHROME:
             default:
-                return new ChromeOptions();
+                return getDefaultChromeOptions();
         }
+    }
+
+    public static ChromeOptions getDefaultChromeOptions() {
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.setPageLoadTimeout(Duration.ofSeconds(DEFAULT_PAGELOAD_WAIT));
+        System.setProperty("webdriver.chrome.args", "--disable-logging");
+        System.setProperty("webdriver.chrome.silentOutput", "true");
+        return options;
     }
 
     public enum ArchType {
@@ -436,7 +441,7 @@ public class Browser implements WebDriver {
         return executeAsyncScript(String.format(Utilities.JQUERY_LOADER_SCRIPT, version));
     }
 
-    public void destroy() {
+    public static void destroy() {
         try {
             driver().close();
         } catch (Exception ignore) {
@@ -567,7 +572,8 @@ public class Browser implements WebDriver {
     }
 
     public Browser waitForElementToBePresent(By by, int timeOutInSeconds) {
-        new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.presenceOfElementLocated(by));
+        new WebDriverWait(driver(), Duration.ofSeconds(timeOutInSeconds))
+                .until(ExpectedConditions.presenceOfElementLocated(by));
         return this;
     }
 
@@ -576,7 +582,8 @@ public class Browser implements WebDriver {
     }
 
     public Browser waitForElementToBeClickable(By by, int timeOutInSeconds) {
-        new WebDriverWait(driver(), timeOutInSeconds).until(ExpectedConditions.elementToBeClickable(by));
+        new WebDriverWait(driver(), Duration.ofSeconds(timeOutInSeconds))
+                .until(ExpectedConditions.elementToBeClickable(by));
         return this;
     }
 

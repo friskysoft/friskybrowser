@@ -19,11 +19,17 @@ form label {
 
 button {
     padding: 0.5rem 1rem;
+    margin: 0.5rem 0;
     color: white;
     text-align: center;
     background: #2299ff;
     border: 0;
     cursor: pointer;
+}
+
+button:disabled {
+    color: #aaa;
+    cursor: auto;
 }
 
 .button-blocker {

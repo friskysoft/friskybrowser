@@ -10,15 +10,18 @@
     <form class="login">
         <div class="row" id="username-input">
             <label>Username:</label>
-            <input id="username" type="text" name="username" placeholder="Username"/>
+            <input id="username" type="text" name="username" placeholder="Username" data_test="user_box"/>
         </div>
         <div class="row" id="password-input">
             <label>Password:</label>
-            <input id="password" type="password" name="password" placeholder="Password"/>
+            <input id="password" type="password" name="password" placeholder="Password" data_test="pw_box"/>
         </div>
     </form>
     <div id="submit-button">
         <button onclick="login()">Login</button>
+    </div>
+    <div id="disabled-button">
+        <button disabled>Register</button>
     </div>
     <div id="flash-message" style="display: none"></div>
 </div>

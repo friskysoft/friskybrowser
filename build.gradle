@@ -1,22 +1,38 @@
 group 'com.friskysoft'
 
 apply plugin: 'java'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'signing'
-apply plugin: 'idea'
+apply plugin: 'jacoco'
 
-project.ext {
-    javaVersion = '1.8'
-    project.version = '2.2.1'
+project.version = '3.0.0-SNAPSHOT'
+
+def oss = project.hasProperty('oss')
+def release = project.hasProperty('release')
+def releaseVersion = project.version.split("-")[0]
+def artifactVersion = release ? releaseVersion : "${releaseVersion}-SNAPSHOT"
+def scmUrl = "https://github.com/friskysoft/friskybrowser"
+def ossRepoUsername = project.hasProperty('ossrhUsername') ? ossrhUsername : ""
+def ossRepoPassword = project.hasProperty('ossrhPassword') ? ossrhPassword : ""
+def ossSnapshotRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+def ossReleaseRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+def localReleaseRepoUrl = layout.buildDirectory.dir('repos/releases').get().asFile.path
+def localSnapshotsRepoUrl = layout.buildDirectory.dir('repos/snapshots').get().asFile.path
+def mavenRepo = ""
+
+if (oss) {
+    mavenRepo = release ? ossReleaseRepoUrl : ossSnapshotRepoUrl
+} else {
+    mavenRepo = release ? localReleaseRepoUrl : localSnapshotsRepoUrl
 }
 
-sourceCompatibility = javaVersion
-
-idea {
-    project {
-        jdkName = javaVersion
-        languageLevel = javaVersion
-    }
+ext {
+    println("* OSS snapshot repo: " + ossSnapshotRepoUrl)
+    println("* OSS release repo: " + ossReleaseRepoUrl)
+    println("* OSS username: " + ossRepoUsername)
+    println("* OSS password: " + ossRepoPassword.replaceAll('.', '*'))
+    println("* Selected upload repo: $mavenRepo")
+    println("* Artifact version: $artifactVersion")
 }
 
 repositories {
@@ -24,12 +40,13 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '[3.141.59,4)'
-    implementation group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '[5.0.1,)'
-    implementation group: 'com.assertthat', name: 'selenium-shutterbug', version: '1.5'
-    implementation group: 'org.assertj', name: 'assertj-core', version: '[3.20,)'
-    testImplementation group: 'org.testng', name: 'testng', version: '7.4.0'
-    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '(4.15,5]'
+    implementation group: 'org.seleniumhq.selenium', name: 'selenium-http-jdk-client', version: '(4.13,5]'
+    implementation group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '(5.5,6]'
+    implementation group: 'com.assertthat', name: 'selenium-shutterbug', version: '(1,2]'
+    implementation group: 'org.assertj', name: 'assertj-core', version: '(3.24,4]'
+    testImplementation group: 'org.testng', name: 'testng', version: '7.8.0'
+    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.11'
 }
 
 clean {
@@ -37,6 +54,9 @@ clean {
 }
 
 test {
+    systemProperties System.getProperties()
+    systemProperties System.getenv()
+
     useTestNG() {
         options {
             parallel = 'methods'
@@ -55,26 +75,41 @@ test {
             println "\nResults: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
         }
     }
+
+    finalizedBy jacocoTestReport
 }
 
-tasks.withType(Jar) {
+jacoco {
+    toolVersion = "0.8.9"
+    reportsDirectory = layout.buildDirectory.dir('jacoco')
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacoco/html')
+    }
+}
+
+tasks.withType(Jar).configureEach {
     manifest {
         attributes(
                 "Name": project.name,
                 "Implementation-Title": project.name,
-                "Implementation-Version": project.version,
+                "Implementation-Version": artifactVersion,
                 "Implementation-Vendor": "FriskySoft"
         )
     }
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
@@ -86,74 +121,66 @@ signing {
     sign configurations.archives
 }
 
-uploadArchives {
+publish.dependsOn signArchives
 
-    dependsOn signArchives
+publishing {
 
-    def repoUsername = ""
-    def repoPassword = ""
-    def snapshotRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-    def stagingRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-    def scmUrl = 'https://github.com/friskysoft/friskybrowser'
-
-    if (project.hasProperty('ossrhUsername')) {
-        repoUsername = ossrhUsername
+    println("* Artifacts:")
+    configurations.archives.allArtifacts.each { arc ->
+        println('  - ' + arc.file)
     }
 
-    if (project.hasProperty('ossrhPassword')) {
-        repoPassword = ossrhPassword
-    }
-
-    doFirst {
-        println("Uploading artifacts to maven:")
-        println("* snapshot repo: " + snapshotRepoUrl)
-        println("* release repo: " + stagingRepoUrl)
-        println("* username: " + repoUsername)
-        println("* password: " + repoPassword.replaceAll('.', '*'))
-        println("* artifacts:")
-        configurations.archives.allArtifacts.each { arc ->
-            println('-- ' + arc.file)
-        }
+    if (oss && release) {
+        println()
+        println("----------------------------------------------")
+        println("*** ARTIFACT WILL BE PUSHED TO OSS STAGING ***")
+        println("----------------------------------------------")
+        println()
     }
 
     repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-            repository(url: stagingRepoUrl) {
-                authentication(userName: repoUsername, password: repoPassword)
+        maven {
+            url = mavenRepo
+            if (oss) {
+                credentials {
+                    username ossRepoUsername
+                    password ossRepoPassword
+                }
             }
+        }
+    }
 
-            snapshotRepository(url: snapshotRepoUrl) {
-                authentication(userName: repoUsername, password: repoPassword)
-            }
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
 
-            pom.project {
-                name project.name
-                packaging 'jar'
-                artifactId project.name
-                version project.version
-                groupId project.group
-                description project.name
-
-                url scmUrl
+            pom {
+                name = project.name
+                description = project.name
+                groupId = project.group
+                artifactId = project.name
+                version = artifactVersion
+                packaging = 'jar'
+                url = scmUrl
 
                 scm {
-                    url scmUrl
+                    url = scmUrl
                 }
 
                 licenses {
                     license {
-                        name 'The Apache License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                     }
                 }
 
                 developers {
                     developer {
-                        id 'hossain'
-                        name 'Rafaat Hossain'
-                        email 'rafaat123@gmail.com'
+                        id = 'hossain'
+                        name = 'Rafaat Hossain'
+                        email = 'rafaat123@gmail.com'
                     }
                 }
             }
